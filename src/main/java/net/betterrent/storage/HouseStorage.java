@@ -2,6 +2,8 @@ package net.betterrent.storage;
 
 import net.betterrent.BetterRent;
 import net.betterrent.model.RentHouse;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -19,6 +21,7 @@ public class HouseStorage {
     private FileConfiguration config;
 
 
+
     public HouseStorage(BetterRent plugin) {
 
         this.plugin = plugin;
@@ -26,6 +29,7 @@ public class HouseStorage {
         load();
 
     }
+
 
 
 
@@ -60,11 +64,14 @@ public class HouseStorage {
 
 
 
+
     public void save() {
 
 
         for (Map.Entry<String, RentHouse> entry :
-                plugin.getRentManager().getHouses().entrySet()) {
+                plugin.getRentManager()
+                        .getHouses()
+                        .entrySet()) {
 
 
             String path = "houses." + entry.getKey();
@@ -104,12 +111,38 @@ public class HouseStorage {
             );
 
 
+
             config.set(
                     path + ".trusted",
                     house.getTrustedPlayers()
                             .stream()
                             .map(UUID::toString)
                             .toList()
+            );
+
+
+
+            // Sauvegarde position 1
+
+            saveLocation(
+                    path + ".pos1",
+                    house.getPos1()
+            );
+
+
+
+            // Sauvegarde position 2
+
+            saveLocation(
+                    path + ".pos2",
+                    house.getPos2()
+            );
+
+
+
+            config.set(
+                    path + ".region",
+                    house.getWorldGuardRegion()
             );
 
         }
@@ -131,12 +164,91 @@ public class HouseStorage {
 
 
 
+
+    private void saveLocation(String path, Location loc) {
+
+
+        if (loc == null) {
+            return;
+        }
+
+
+        config.set(
+                path + ".world",
+                loc.getWorld().getName()
+        );
+
+
+        config.set(
+                path + ".x",
+                loc.getX()
+        );
+
+
+        config.set(
+                path + ".y",
+                loc.getY()
+        );
+
+
+        config.set(
+                path + ".z",
+                loc.getZ()
+        );
+
+    }
+
+
+
+
+
+    private Location loadLocation(String path) {
+
+
+        if (!config.contains(path + ".world")) {
+
+            return null;
+
+        }
+
+
+        return new Location(
+
+                Bukkit.getWorld(
+                        config.getString(
+                                path + ".world"
+                        )
+                ),
+
+                config.getDouble(
+                        path + ".x"
+                ),
+
+                config.getDouble(
+                        path + ".y"
+                ),
+
+                config.getDouble(
+                        path + ".z"
+                )
+
+        );
+
+    }
+
+
+
+
+
     public void loadHouses() {
 
 
         if (!config.contains("houses")) {
+
             return;
+
         }
+
 
 
         for (String key :
@@ -145,15 +257,20 @@ public class HouseStorage {
 
 
 
+            String path = "houses." + key;
+
+
+
             String name =
                     config.getString(
-                            "houses." + key + ".name"
+                            path + ".name"
                     );
+
 
 
             double price =
                     config.getDouble(
-                            "houses." + key + ".price"
+                            path + ".price"
                     );
 
 
@@ -166,15 +283,12 @@ public class HouseStorage {
 
 
 
-            if (config.contains(
-                    "houses." + key + ".owner"
-            )) {
-
+            if (config.contains(path + ".owner")) {
 
                 house.setOwner(
                         UUID.fromString(
                                 config.getString(
-                                "houses." + key + ".owner"
+                                        path + ".owner"
                                 )
                         )
                 );
@@ -185,7 +299,30 @@ public class HouseStorage {
 
             house.setExpireTime(
                     config.getLong(
-                            "houses." + key + ".expire"
+                            path + ".expire"
+                    )
+            );
+
+
+
+            house.setPos1(
+                    loadLocation(
+                            path + ".pos1"
+                    )
+            );
+
+
+            house.setPos2(
+                    loadLocation(
+                            path + ".pos2"
+                    )
+            );
+
+
+
+            house.setWorldGuardRegion(
+                    config.getString(
+                            path + ".region"
                     )
             );
 
