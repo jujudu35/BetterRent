@@ -43,11 +43,13 @@ public class RentHouse {
 
 
 
+
     public String getName() {
 
         return name;
 
     }
+
 
 
 
@@ -71,6 +73,7 @@ public class RentHouse {
 
 
 
+
     public void setOwner(UUID owner) {
 
         this.owner = owner;
@@ -90,6 +93,7 @@ public class RentHouse {
 
 
 
+
     public void setExpireTime(long expireTime) {
 
         this.expireTime = expireTime;
@@ -102,8 +106,39 @@ public class RentHouse {
 
     public boolean isRented() {
 
-        return owner != null &&
-                expireTime > System.currentTimeMillis();
+        return owner != null
+                && expireTime > System.currentTimeMillis();
+
+    }
+
+
+
+
+
+    public void clearRent() {
+
+        this.owner = null;
+        this.expireTime = 0;
+
+        trustedPlayers.clear();
+
+    }
+
+
+
+
+
+    public boolean hasAccess(UUID uuid) {
+
+
+        if (owner != null && owner.equals(uuid)) {
+
+            return true;
+
+        }
+
+
+        return trustedPlayers.contains(uuid);
 
     }
 
@@ -122,6 +157,7 @@ public class RentHouse {
 
 
     public void addTrusted(UUID uuid) {
+
 
         if (!trustedPlayers.contains(uuid)) {
 
@@ -188,6 +224,16 @@ public class RentHouse {
     public void setPos2(Location pos2) {
 
         this.pos2 = pos2;
+
+    }
+
+
+
+
+
+    public boolean hasLocation() {
+
+        return pos1 != null && pos2 != null;
 
     }
 
