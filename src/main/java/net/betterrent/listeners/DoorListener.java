@@ -1,213 +1,114 @@
-package net.betterrent.model;
+package net.betterrent.listeners;
 
-import org.bukkit.Location;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
-
-public class RentHouse {
-
-
-    private final String name;
-
-    private final double pricePerDay;
+import net.betterrent.BetterRent;
+import net.betterrent.model.RentHouse;
+import net.betterrent.utils.RegionUtil;
+import org.bukkit.ChatColor;
+import org.bukkit.block.Block;
+import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.block.Action;
 
 
-    private UUID owner;
-
-    private long expireTime;
+public class DoorListener implements Listener {
 
 
-    private Location pos1;
+    private final BetterRent plugin;
 
-    private Location pos2;
-
-
-    private String worldGuardRegion;
-
-
-    private final List<UUID> trustedPlayers;
+    private final RegionUtil regionUtil;
 
 
 
-    public RentHouse(String name, double pricePerDay) {
+    public DoorListener(BetterRent plugin) {
 
-        this.name = name;
-        this.pricePerDay = pricePerDay;
-
-        this.trustedPlayers = new ArrayList<>();
+        this.plugin = plugin;
+        this.regionUtil = new RegionUtil(plugin);
 
     }
 
 
 
-
-    public String getName() {
-
-        return name;
-
-    }
+    @EventHandler
+    public void onDoorOpen(PlayerInteractEvent event) {
 
 
-
-
-    public double getPricePerDay() {
-
-        return pricePerDay;
-
-    }
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+            return;
+        }
 
 
 
+        Block block = event.getClickedBlock();
 
 
-    public UUID getOwner() {
-
-        return owner;
-
-    }
-
-
-
-
-    public void setOwner(UUID owner) {
-
-        this.owner = owner;
-
-    }
+        if (block == null) {
+            return;
+        }
 
 
 
+        if (!block.getType()
+                .toString()
+                .contains("DOOR")) {
 
-
-    public long getExpireTime() {
-
-        return expireTime;
-
-    }
-
-
-
-
-    public void setExpireTime(long expireTime) {
-
-        this.expireTime = expireTime;
-
-    }
-
-
-
-
-
-    public boolean isRented() {
-
-        return owner != null &&
-                expireTime > System.currentTimeMillis();
-
-    }
-
-
-
-
-
-    public List<UUID> getTrustedPlayers() {
-
-        return trustedPlayers;
-
-    }
-
-
-
-
-
-    public void addTrusted(UUID uuid) {
-
-        if (!trustedPlayers.contains(uuid)) {
-
-            trustedPlayers.add(uuid);
+            return;
 
         }
 
-    }
+
+
+        Player player = event.getPlayer();
+
+
+
+        RentHouse house =
+                regionUtil.getHouseAt(
+                        block.getLocation()
+                );
+
+
+
+        if (house == null) {
+            return;
+        }
+
+
+
+        if (house.getOwner() == null) {
+            return;
+        }
 
 
 
 
+        if (house.getOwner()
+                .equals(player.getUniqueId())) {
 
-    public void removeTrusted(UUID uuid) {
+            return;
 
-        trustedPlayers.remove(uuid);
-
-    }
-
-
+        }
 
 
 
-    public boolean isTrusted(UUID uuid) {
+        if (house.isTrusted(
+                player.getUniqueId()
+        )) {
 
-        return trustedPlayers.contains(uuid);
+            return;
 
-    }
-
-
-
-
-
-    public Location getPos1() {
-
-        return pos1;
-
-    }
+        }
 
 
 
+        event.setCancelled(true);
 
 
-    public void setPos1(Location pos1) {
-
-        this.pos1 = pos1;
-
-    }
-
-
-
-
-
-    public Location getPos2() {
-
-        return pos2;
-
-    }
-
-
-
-
-
-    public void setPos2(Location pos2) {
-
-        this.pos2 = pos2;
-
-    }
-
-
-
-
-
-    public String getWorldGuardRegion() {
-
-        return worldGuardRegion;
-
-    }
-
-
-
-
-
-    public void setWorldGuardRegion(String region) {
-
-        this.worldGuardRegion = region;
+        player.sendMessage(
+                ChatColor.RED +
+                "Cette maison est louée."
+        );
 
     }
 
