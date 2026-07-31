@@ -1,1 +1,50 @@
+name: BetterRent
+version: '1.0.0'
+main: net.betterrent.BetterRent
+api-version: '1.21'
+authors:
+  - jujudu
+description: Advanced house rental plugin with Vault, WorldEdit and WorldGuard.
+website: https://github.com/jujudu/BetterRent
 
+depend:
+  - Vault
+  - WorldEdit
+  - WorldGuard
+
+commands:
+  rent:
+    description: Main BetterRent command.
+    usage: /rent
+    aliases:
+      - br
+    permission: betterrent.use
+
+permissions:
+  betterrent.use:
+    description: Allows using BetterRent.
+    default: true
+
+  betterrent.admin:
+    description: Access to all BetterRent commands.
+    default: op
+
+  betterrent.create:
+    description: Create rental houses.
+    default: op
+
+  betterrent.delete:
+    description: Delete rental houses.
+    default: op
+
+  betterrent.reload:
+    description: Reload BetterRent.
+    default: op
+
+  betterrent.trust:
+    description: Trust players in your rental.
+    default: true
+
+  betterrent.untrust:
+    description: Remove trusted players.
+    default: true
