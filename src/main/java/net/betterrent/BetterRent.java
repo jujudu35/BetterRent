@@ -23,7 +23,6 @@ public final class BetterRent extends JavaPlugin {
     private ConfigManager configManager;
     private HookManager hookManager;
     private RentManager rentManager;
-
     private HouseStorage houseStorage;
 
 
@@ -59,11 +58,13 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+        rentManager = new RentManager(this);
+
+
+
         houseStorage = new HouseStorage(this);
 
-
-
-        rentManager = new RentManager(this);
+        houseStorage.loadHouses();
 
 
 
@@ -90,6 +91,7 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
     private void registerCommands() {
 
 
@@ -108,32 +110,28 @@ public final class BetterRent extends JavaPlugin {
     private void registerListeners() {
 
 
-        Bukkit.getPluginManager()
-                .registerEvents(
-                        new BlockListener(this),
-                        this
-                );
+        Bukkit.getPluginManager().registerEvents(
+                new BlockListener(this),
+                this
+        );
 
 
-        Bukkit.getPluginManager()
-                .registerEvents(
-                        new DoorListener(this),
-                        this
-                );
+        Bukkit.getPluginManager().registerEvents(
+                new DoorListener(this),
+                this
+        );
 
 
-        Bukkit.getPluginManager()
-                .registerEvents(
-                        new InventoryListener(this),
-                        this
-                );
+        Bukkit.getPluginManager().registerEvents(
+                new InventoryListener(this),
+                this
+        );
 
 
-        Bukkit.getPluginManager()
-                .registerEvents(
-                        new SignListener(this),
-                        this
-                );
+        Bukkit.getPluginManager().registerEvents(
+                new SignListener(this),
+                this
+        );
 
     }
 
@@ -151,7 +149,9 @@ public final class BetterRent extends JavaPlugin {
         }
 
 
+        getLogger().info("-------------------------------------");
         getLogger().info("BetterRent disabled.");
+        getLogger().info("-------------------------------------");
 
     }
 
@@ -167,11 +167,13 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
     public ConfigManager getConfigManager() {
 
         return configManager;
 
     }
+
 
 
 
@@ -183,11 +185,13 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
     public RentManager getRentManager() {
 
         return rentManager;
 
     }
+
 
 
 
