@@ -47,12 +47,16 @@ public final class BetterRent extends JavaPlugin {
 
         if (!hookManager.setup()) {
 
+
             getLogger().severe("-------------------------------------");
             getLogger().severe("BetterRent failed to start.");
             getLogger().severe("Missing dependency.");
             getLogger().severe("-------------------------------------");
 
-            Bukkit.getPluginManager().disablePlugin(this);
+
+            Bukkit.getPluginManager()
+                    .disablePlugin(this);
+
             return;
         }
 
@@ -70,15 +74,17 @@ public final class BetterRent extends JavaPlugin {
 
         registerCommands();
 
+
         registerListeners();
 
 
 
-        new RentExpireTask(this).runTaskTimer(
-                this,
-                20L * 60L,
-                20L * 60L
-        );
+        new RentExpireTask(this)
+                .runTaskTimer(
+                        this,
+                        20L * 60L,
+                        20L * 60L
+                );
 
 
 
@@ -92,13 +98,17 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
     private void registerCommands() {
 
 
         if (getCommand("rent") != null) {
 
+
             getCommand("rent")
-                    .setExecutor(new RentCommand(this));
+                    .setExecutor(
+                            new RentCommand(this)
+                    );
 
         }
 
@@ -107,33 +117,39 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
     private void registerListeners() {
 
 
-        Bukkit.getPluginManager().registerEvents(
-                new BlockListener(this),
-                this
-        );
+        Bukkit.getPluginManager()
+                .registerEvents(
+                        new BlockListener(this),
+                        this
+                );
 
 
-        Bukkit.getPluginManager().registerEvents(
-                new DoorListener(this),
-                this
-        );
+        Bukkit.getPluginManager()
+                .registerEvents(
+                        new DoorListener(this),
+                        this
+                );
 
 
-        Bukkit.getPluginManager().registerEvents(
-                new InventoryListener(this),
-                this
-        );
+        Bukkit.getPluginManager()
+                .registerEvents(
+                        new InventoryListener(this),
+                        this
+                );
 
 
-        Bukkit.getPluginManager().registerEvents(
-                new SignListener(this),
-                this
-        );
+        Bukkit.getPluginManager()
+                .registerEvents(
+                        new SignListener(this),
+                        this
+                );
 
     }
+
 
 
 
@@ -144,9 +160,12 @@ public final class BetterRent extends JavaPlugin {
 
         if (houseStorage != null) {
 
+
             houseStorage.save();
 
+
         }
+
 
 
         getLogger().info("-------------------------------------");
@@ -159,7 +178,9 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
     public static BetterRent getInstance() {
+
 
         return instance;
 
@@ -168,7 +189,9 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
     public ConfigManager getConfigManager() {
+
 
         return configManager;
 
@@ -177,7 +200,9 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
     public HookManager getHookManager() {
+
 
         return hookManager;
 
@@ -186,7 +211,9 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
     public RentManager getRentManager() {
+
 
         return rentManager;
 
@@ -195,7 +222,9 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
     public HouseStorage getHouseStorage() {
+
 
         return houseStorage;
 
