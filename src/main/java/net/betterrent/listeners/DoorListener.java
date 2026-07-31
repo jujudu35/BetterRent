@@ -1,114 +1,213 @@
-package net.betterrent.listeners;
+package net.betterrent.model;
 
-import net.betterrent.BetterRent;
-import net.betterrent.model.RentHouse;
-import net.betterrent.utils.RegionUtil;
-import org.bukkit.ChatColor;
-import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.block.Action;
+import org.bukkit.Location;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+public class RentHouse {
 
 
-public class DoorListener implements Listener {
+    private final String name;
+
+    private final double pricePerDay;
 
 
-    private final BetterRent plugin;
+    private UUID owner;
 
-    private final RegionUtil regionUtil;
+    private long expireTime;
+
+
+    private Location pos1;
+
+    private Location pos2;
+
+
+    private String worldGuardRegion;
+
+
+    private final List<UUID> trustedPlayers;
 
 
 
-    public DoorListener(BetterRent plugin) {
+    public RentHouse(String name, double pricePerDay) {
 
-        this.plugin = plugin;
-        this.regionUtil = new RegionUtil(plugin);
+        this.name = name;
+        this.pricePerDay = pricePerDay;
+
+        this.trustedPlayers = new ArrayList<>();
 
     }
 
 
 
-    @EventHandler
-    public void onDoorOpen(PlayerInteractEvent event) {
+
+    public String getName() {
+
+        return name;
+
+    }
 
 
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
-            return;
+
+
+    public double getPricePerDay() {
+
+        return pricePerDay;
+
+    }
+
+
+
+
+
+    public UUID getOwner() {
+
+        return owner;
+
+    }
+
+
+
+
+    public void setOwner(UUID owner) {
+
+        this.owner = owner;
+
+    }
+
+
+
+
+
+    public long getExpireTime() {
+
+        return expireTime;
+
+    }
+
+
+
+
+    public void setExpireTime(long expireTime) {
+
+        this.expireTime = expireTime;
+
+    }
+
+
+
+
+
+    public boolean isRented() {
+
+        return owner != null &&
+                expireTime > System.currentTimeMillis();
+
+    }
+
+
+
+
+
+    public List<UUID> getTrustedPlayers() {
+
+        return trustedPlayers;
+
+    }
+
+
+
+
+
+    public void addTrusted(UUID uuid) {
+
+        if (!trustedPlayers.contains(uuid)) {
+
+            trustedPlayers.add(uuid);
+
         }
 
-
-
-        Block block = event.getClickedBlock();
-
-
-        if (block == null) {
-            return;
-        }
-
-
-
-        if (!block.getType()
-                .toString()
-                .contains("DOOR")) {
-
-            return;
-
-        }
-
-
-
-        Player player = event.getPlayer();
-
-
-
-        RentHouse house =
-                regionUtil.getHouseAt(
-                        block.getLocation()
-                );
-
-
-
-        if (house == null) {
-            return;
-        }
-
-
-
-        if (house.getOwner() == null) {
-            return;
-        }
+    }
 
 
 
 
-        if (house.getOwner()
-                .equals(player.getUniqueId())) {
 
-            return;
+    public void removeTrusted(UUID uuid) {
 
-        }
+        trustedPlayers.remove(uuid);
 
-
-
-        if (house.isTrusted(
-                player.getUniqueId()
-        )) {
-
-            return;
-
-        }
+    }
 
 
 
-        event.setCancelled(true);
 
 
-        player.sendMessage(
-                ChatColor.RED +
-                "Cette maison est louée."
-        );
+    public boolean isTrusted(UUID uuid) {
+
+        return trustedPlayers.contains(uuid);
+
+    }
+
+
+
+
+
+    public Location getPos1() {
+
+        return pos1;
+
+    }
+
+
+
+
+
+    public void setPos1(Location pos1) {
+
+        this.pos1 = pos1;
+
+    }
+
+
+
+
+
+    public Location getPos2() {
+
+        return pos2;
+
+    }
+
+
+
+
+
+    public void setPos2(Location pos2) {
+
+        this.pos2 = pos2;
+
+    }
+
+
+
+
+
+    public String getWorldGuardRegion() {
+
+        return worldGuardRegion;
+
+    }
+
+
+
+
+
+    public void setWorldGuardRegion(String region) {
+
+        this.worldGuardRegion = region;
 
     }
 
