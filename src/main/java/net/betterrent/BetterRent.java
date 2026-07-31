@@ -10,6 +10,8 @@ import net.betterrent.managers.HookManager;
 import net.betterrent.managers.RentManager;
 import net.betterrent.storage.HouseStorage;
 import net.betterrent.task.RentExpireTask;
+import net.betterrent.worldedit.SelectionManager;
+
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -24,6 +26,7 @@ public final class BetterRent extends JavaPlugin {
     private HookManager hookManager;
     private RentManager rentManager;
     private HouseStorage houseStorage;
+    private SelectionManager selectionManager;
 
 
 
@@ -62,6 +65,7 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
         rentManager = new RentManager(this);
 
 
@@ -69,6 +73,10 @@ public final class BetterRent extends JavaPlugin {
         houseStorage = new HouseStorage(this);
 
         houseStorage.loadHouses();
+
+
+
+        selectionManager = new SelectionManager(this);
 
 
 
@@ -128,6 +136,7 @@ public final class BetterRent extends JavaPlugin {
                 );
 
 
+
         Bukkit.getPluginManager()
                 .registerEvents(
                         new DoorListener(this),
@@ -135,11 +144,13 @@ public final class BetterRent extends JavaPlugin {
                 );
 
 
+
         Bukkit.getPluginManager()
                 .registerEvents(
                         new InventoryListener(this),
                         this
                 );
+
 
 
         Bukkit.getPluginManager()
@@ -178,9 +189,7 @@ public final class BetterRent extends JavaPlugin {
 
 
 
-
     public static BetterRent getInstance() {
-
 
         return instance;
 
@@ -192,7 +201,6 @@ public final class BetterRent extends JavaPlugin {
 
     public ConfigManager getConfigManager() {
 
-
         return configManager;
 
     }
@@ -202,7 +210,6 @@ public final class BetterRent extends JavaPlugin {
 
 
     public HookManager getHookManager() {
-
 
         return hookManager;
 
@@ -214,7 +221,6 @@ public final class BetterRent extends JavaPlugin {
 
     public RentManager getRentManager() {
 
-
         return rentManager;
 
     }
@@ -225,8 +231,17 @@ public final class BetterRent extends JavaPlugin {
 
     public HouseStorage getHouseStorage() {
 
-
         return houseStorage;
+
+    }
+
+
+
+
+
+    public SelectionManager getSelectionManager() {
+
+        return selectionManager;
 
     }
 
