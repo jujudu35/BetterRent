@@ -1,17 +1,23 @@
 package net.betterrent.listeners;
 
+
 import net.betterrent.BetterRent;
 import net.betterrent.model.RentHouse;
 import net.betterrent.utils.RegionUtil;
-import net.milkbowl.vault.economy.Economy;
+
 import org.bukkit.ChatColor;
-import org.bukkit.block.Sign;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.block.Action;
 
-public class SignListener implements Listener {
+
+
+public class InventoryListener implements Listener {
 
 
     private final BetterRent plugin;
@@ -20,7 +26,7 @@ public class SignListener implements Listener {
 
 
 
-    public SignListener(BetterRent plugin) {
+    public InventoryListener(BetterRent plugin) {
 
         this.plugin = plugin;
         this.regionUtil = new RegionUtil(plugin);
@@ -30,29 +36,21 @@ public class SignListener implements Listener {
 
 
 
-
     @EventHandler
-    public void onSignClick(PlayerInteractEvent event) {
+    public void onInteract(PlayerInteractEvent event) {
 
 
-        if (!(event.getClickedBlock()
-                instanceof Sign sign)) {
-
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
-
         }
 
 
 
-        String[] lines = sign.getLines();
+        Block block = event.getClickedBlock();
 
 
-
-        if (!lines[0]
-                .equalsIgnoreCase("[BetterRent]")) {
-
+        if (block == null) {
             return;
-
         }
 
 
@@ -61,84 +59,53 @@ public class SignListener implements Listener {
 
 
 
-        String houseName = lines[1];
-
-
-
         RentHouse house =
-                plugin.getRentManager()
-                        .getHouse(houseName);
+                regionUtil.getHouseAt(
+                        block.getLocation()
+                );
 
 
 
         if (house == null) {
-
-
-            player.sendMessage(
-                    ChatColor.RED +
-                    "Cette maison n'existe pas."
-            );
-
-
             return;
-
         }
 
 
 
-        if (house.isRented()) {
-
-
-            player.sendMessage(
-                    ChatColor.RED +
-                    "Cette maison est déjà louée."
-            );
-
-
+        // OP
+        if (player.isOp()) {
             return;
+        }
 
+
+
+        // Propriétaire ou trust
+        if (isAllowed(player, house)) {
+            return;
         }
 
 
 
 
-        Economy economy =
-                plugin.getHookManager()
-                        .getEconomy();
-
-
-
-        if (economy == null) {
-
-
-            player.sendMessage(
-                    ChatColor.RED +
-                    "Vault n'est pas disponible."
-            );
-
-
-            return;
-
-        }
+        Material type = block.getType();
 
 
 
 
-        double price =
-                house.getPricePerDay();
+        // ==========================
+        // COFFRES
+        // ==========================
 
 
-
-        if (!economy.has(
-                player,
-                price
-        )) {
+        if (type == Material.CHEST
+                || type == Material.TRAPPED_CHEST) {
 
 
-            player.sendMessage(
-                    ChatColor.RED +
-                    "Vous n'avez pas assez d'argent."
-            );
+            if (!house.canOpenChests()) {
+
+                cancel(event, player);
+
+            }
 
 
             return;
@@ -148,32 +115,202 @@ public class SignListener implements Listener {
 
 
 
-        economy.withdrawPlayer(
-                player,
-                price
-        );
+
+        // ==========================
+        // BARILS
+        // ==========================
+
+
+        if (type == Material.BARREL) {
+
+
+            if (!house.canOpenBarrels()) {
+
+                cancel(event, player);
+
+            }
+
+
+            return;
+
+        }
 
 
 
-        house.setOwner(
+
+
+
+        // ==========================
+        // SHULKERS
+        // ==========================
+
+
+        if (type.name().endsWith("SHULKER_BOX")) {
+
+
+            if (!house.canOpenShulkers()) {
+
+
+                cancel(event, player);
+
+            }
+
+
+            return;
+
+        }
+
+
+
+
+
+
+        // ==========================
+        // FOURS
+        // ==========================
+
+
+        if (type == Material.FURNACE
+                || type == Material.BLAST_FURNACE
+                || type == Material.SMOKER) {
+
+
+            if (!house.canUseFurnaces()) {
+
+
+                cancel(event, player);
+
+            }
+
+
+            return;
+
+        }
+
+
+
+
+
+
+        // ==========================
+        // ENCLUMES
+        // ==========================
+
+
+        if (type == Material.ANVIL
+                || type == Material.CHIPPED_ANVIL
+                || type == Material.DAMAGED_ANVIL) {
+
+
+            if (!house.canUseAnvils()) {
+
+
+                cancel(event, player);
+
+            }
+
+
+            return;
+
+        }
+
+
+
+
+
+
+        // ==========================
+        // TABLE DE CRAFT
+        // ==========================
+
+
+        if (type == Material.CRAFTING_TABLE) {
+
+
+            if (!house.canUseCrafting()) {
+
+
+                cancel(event, player);
+
+            }
+
+
+            return;
+
+        }
+
+
+
+
+
+
+
+        // ==========================
+        // TABLE D'ENCHANTEMENT
+        // ==========================
+
+
+        if (type == Material.ENCHANTING_TABLE) {
+
+
+            if (!house.canUseEnchanting()) {
+
+
+                cancel(event, player);
+
+            }
+
+
+        }
+
+
+    }
+
+
+
+
+
+
+
+    private boolean isAllowed(Player player, RentHouse house) {
+
+
+        if (house.getOwner() != null
+                && house.getOwner()
+                .equals(player.getUniqueId())) {
+
+
+            return true;
+
+        }
+
+
+
+        return house.isTrusted(
                 player.getUniqueId()
         );
 
+    }
 
-        house.setExpireTime(
-                System.currentTimeMillis()
-                        + (24L * 60L * 60L * 1000L)
-        );
+
+
+
+
+
+    private void cancel(PlayerInteractEvent event, Player player) {
+
+
+        event.setCancelled(true);
 
 
 
         player.sendMessage(
-                ChatColor.GREEN +
-                "Vous avez loué la maison "
-                + house.getName()
-                + " pour 24 heures."
+                ChatColor.RED +
+                "Vous ne pouvez pas utiliser ceci dans cette location."
         );
 
     }
+
+
 
 }
