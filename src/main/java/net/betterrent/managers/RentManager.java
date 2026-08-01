@@ -130,60 +130,51 @@ public class RentManager {
 
 
     // =================================
-    // CREATION MAISON
-    // =================================
+// CREATION MAISON
+// =================================
+
+public String createHouse(HouseType type) {
 
 
-    public String createHouse(HouseType type) {
+    int number = 1;
+
+    String id;
 
 
+    do {
 
-        int number = 1;
-
-
-        String id;
-
-
-
-        do {
+        id =
+                type.name().toLowerCase()
+                + "_"
+                + number;
 
 
-            id =
-                    type.name().toLowerCase()
-                    + "_"
-                    + number;
+        number++;
 
 
-            number++;
-
-
-        }
-        while(houses.containsKey(id));
+    } while(houses.containsKey(id));
 
 
 
 
-
-        RentHouse house =
-                new RentHouse(
-                        type.getDisplayName(),
-                        type.getPrice()
-                );
-
+    RentHouse house =
+            new RentHouse(
+                    type.getDisplayName(),
+                    type.getPrice()
+            );
 
 
 
-        houses.put(
-                id,
-                house
-        );
+    houses.put(
+            id,
+            house
+    );
 
 
 
-        return id;
+    return id;
 
-
-    }
+}
 
 
 
@@ -273,106 +264,59 @@ public class RentManager {
 
 
 
-    // =================================
-    // LOCATION
-    // =================================
+   // =================================
+// LOCATION
+// =================================
+
+public boolean rentHouse(
+        String id,
+        UUID player,
+        int days
+) {
 
 
-    public boolean rentHouse(
-            String id,
-            UUID player,
-            int days
-    ) {
+    RentHouse house =
+            getHouse(id);
 
 
+    if(house == null) {
 
-        RentHouse house =
-                getHouse(id);
-
-
-
-        if(house == null) {
-
-            return false;
-
-        }
-
-
-
-
-        if(!house.isAvailable()) {
-
-            return false;
-
-        }
-
-
-
-
-
-        house.setOwner(player);
-
-
-
-        long duration =
-                days
-                * 24L
-                * 60L
-                * 60L
-                * 1000L;
-
-
-
-
-
-        house.setExpireTime(
-                System.currentTimeMillis()
-                + duration
-        );
-
-
-
-        return true;
-
-
-    }  GRANDE_MAISON_RICHE(
-                "Grande maison riche",
-                2500000
-        );
-
-
-        private final String displayName;
-
-        private final double price;
-
-
-
-        HouseType(String displayName, double price) {
-
-            this.displayName = displayName;
-
-            this.price = price;
-
-        }
-
-
-
-        public String getDisplayName() {
-
-            return displayName;
-
-        }
-
-
-
-        public double getPrice() {
-
-            return price;
-
-        }
-
+        return false;
 
     }
+
+
+
+    if(!house.isAvailable()) {
+
+        return false;
+
+    }
+
+
+
+    house.setOwner(player);
+
+
+
+    long duration =
+            days
+            * 24L
+            * 60L
+            * 60L
+            * 1000L;
+
+
+
+    house.setExpireTime(
+            System.currentTimeMillis()
+            + duration
+    );
+
+
+    return true;
+
+}
 
 
 
