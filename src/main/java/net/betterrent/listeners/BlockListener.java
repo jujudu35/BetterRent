@@ -6,8 +6,6 @@ import net.betterrent.model.RentHouse;
 import net.betterrent.utils.RegionUtil;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 
 import org.bukkit.event.EventHandler;
@@ -36,6 +34,7 @@ public class BlockListener implements Listener {
 
 
 
+
     // ==========================
     // CASSER DES BLOCS
     // ==========================
@@ -48,10 +47,12 @@ public class BlockListener implements Listener {
         Player player = event.getPlayer();
 
 
+
         RentHouse house =
                 regionUtil.getHouseAt(
                         event.getBlock().getLocation()
                 );
+
 
 
         if (house == null) {
@@ -60,34 +61,57 @@ public class BlockListener implements Listener {
 
 
 
-        // OP
-        if (player.isOp()) {
+        // OP bypass
+        if(player.isOp()) {
             return;
         }
 
 
 
         // Propriétaire
-        if (isAllowed(player, house)) {
+        if(house.getOwner() != null
+                && house.getOwner()
+                .equals(player.getUniqueId())) {
+
             return;
+
+        }
+
+
+
+        // Colocataire
+        if(house.isTrusted(player.getUniqueId())) {
+
+
+            RentHouse.RentPermission permission =
+                    house.getPermission(player.getUniqueId());
+
+
+
+            if(permission.canBreak()) {
+
+                return;
+
+            }
+
+
         }
 
 
 
-        if (!house.canBreakBlocks()) {
+        event.setCancelled(true);
 
 
-            event.setCancelled(true);
+        player.sendMessage(
+                ChatColor.RED +
+                "Vous n'avez pas la permission de casser des blocs ici."
+        );
 
-
-            player.sendMessage(
-                    ChatColor.RED +
-                    "Vous ne pouvez pas casser de blocs dans cette location."
-            );
-
-        }
 
     }
+
+
+
 
 
 
@@ -104,39 +128,69 @@ public class BlockListener implements Listener {
         Player player = event.getPlayer();
 
 
-        Block block = event.getBlockPlaced();
-
-
 
         RentHouse house =
                 regionUtil.getHouseAt(
-                        block.getLocation()
+                        event.getBlockPlaced()
+                        .getLocation()
                 );
 
 
 
-        if (house == null) {
+        if(house == null) {
             return;
         }
 
 
 
-        // OP
-        if (player.isOp()) {
+        // OP bypass
+
+        if(player.isOp()) {
             return;
         }
 
 
 
-        // Propriétaire / Trust
-        if (isAllowed(player, house)) {
+        // Propriétaire
+
+        if(house.getOwner() != null
+                && house.getOwner()
+                .equals(player.getUniqueId())) {
+
             return;
+
         }
 
 
 
-        // Permission poser
-        if (!house.canPlaceBlocks()) {
+        // Colocataire
+
+        if(house.isTrusted(player.getUniqueId())) {
+
+
+            RentHouse.RentPermission permission =
+                    house.getPermission(player.getUniqueId());
+
+
+
+            if(!permission.canPlace()) {
+
+
+                event.setCancelled(true);
+
+
+                player.sendMessage(
+                        ChatColor.RED +
+                        "Vous n'avez pas la permission de poser des blocs ici."
+                );
+
+
+                return;
+
+            }
+
+
+        } else {
 
 
             event.setCancelled(true);
@@ -144,7 +198,7 @@ public class BlockListener implements Listener {
 
             player.sendMessage(
                     ChatColor.RED +
-                    "Vous ne pouvez pas poser de blocs ici."
+                    "Vous n'avez pas accès à cette maison."
             );
 
 
@@ -154,11 +208,22 @@ public class BlockListener implements Listener {
 
 
 
-        // Bloc interdit
-        if (house.isBlockedPlace(block.getType())) {
+
+
+
+        // ==========================
+        // BLOCS INTERDITS
+        // ==========================
+
+
+        if(house.isBlockedPlace(
+                event.getBlockPlaced()
+                .getType())) {
+
 
 
             event.setCancelled(true);
+
 
 
             player.sendMessage(
@@ -169,30 +234,10 @@ public class BlockListener implements Listener {
 
         }
 
+
+
     }
 
-
-
-
-
-    private boolean isAllowed(Player player, RentHouse house) {
-
-
-        if (house.getOwner() != null
-                && house.getOwner()
-                .equals(player.getUniqueId())) {
-
-            return true;
-
-        }
-
-
-
-        return house.isTrusted(
-                player.getUniqueId()
-        );
-
-    }
 
 
 }
