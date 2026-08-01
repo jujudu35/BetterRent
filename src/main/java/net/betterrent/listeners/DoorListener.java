@@ -11,7 +11,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.block.Action;
 
-
 public class DoorListener implements Listener {
 
 
@@ -49,9 +48,13 @@ public class DoorListener implements Listener {
 
 
 
-        if (!block.getType()
-                .toString()
-                .contains("DOOR")) {
+        String type = block.getType().name();
+
+
+
+        if (!type.contains("DOOR")
+                && !type.contains("TRAPDOOR")
+                && !type.contains("FENCE_GATE")) {
 
             return;
 
@@ -76,15 +79,17 @@ public class DoorListener implements Listener {
 
 
 
-        if (house.getOwner() == null) {
+        // OP bypass
+        if (player.isOp()) {
             return;
         }
 
 
 
-
-        if (house.getOwner()
-                .equals(player.getUniqueId())) {
+        // Propriétaire bypass
+        if (house.getOwner() != null &&
+                house.getOwner()
+                        .equals(player.getUniqueId())) {
 
             return;
 
@@ -92,6 +97,7 @@ public class DoorListener implements Listener {
 
 
 
+        // Joueur trust bypass
         if (house.isTrusted(
                 player.getUniqueId()
         )) {
@@ -102,12 +108,51 @@ public class DoorListener implements Listener {
 
 
 
+        // Vérification permissions
+
+        if (type.contains("DOOR")
+                && !house.canOpenDoors()) {
+
+            cancel(event, player);
+            return;
+
+        }
+
+
+
+        if (type.contains("TRAPDOOR")
+                && !house.canOpenTrapdoors()) {
+
+            cancel(event, player);
+            return;
+
+        }
+
+
+
+        if (type.contains("FENCE_GATE")
+                && !house.canOpenFenceGates()) {
+
+            cancel(event, player);
+            return;
+
+        }
+
+    }
+
+
+
+
+
+    private void cancel(PlayerInteractEvent event, Player player) {
+
+
         event.setCancelled(true);
 
 
         player.sendMessage(
                 ChatColor.RED +
-                "Cette maison est louée."
+                "Vous ne pouvez pas ouvrir ceci dans cette location."
         );
 
     }
