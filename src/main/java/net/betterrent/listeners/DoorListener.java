@@ -160,7 +160,3 @@ public class DoorListener implements Listener {
     }
 
 }
-
-    }
-
-}
