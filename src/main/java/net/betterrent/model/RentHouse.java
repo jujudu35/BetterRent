@@ -5,6 +5,7 @@ import org.bukkit.Material;
 
 import java.util.*;
 
+
 public class RentHouse {
 
 
@@ -13,49 +14,60 @@ public class RentHouse {
     private final double pricePerDay;
 
 
+
+    // ==========================
+    // Location
+    // ==========================
+
     private UUID owner;
 
     private long expireTime;
 
 
-    private Location pos1;
-    private Location pos2;
 
+    // ==========================
+    // Région
+    // ==========================
+
+    private Location pos1;
+
+    private Location pos2;
 
     private String worldGuardRegion;
 
 
-    private final List<UUID> trustedPlayers;
 
 
 
     // ==========================
-    // Permissions location
+    // Colocataires
     // ==========================
 
-    private boolean openDoors = true;
-    private boolean openTrapdoors = true;
-    private boolean openFenceGates = true;
+    private final List<UUID> tenants;
 
 
-    private boolean placeBlocks = true;
-    private boolean breakBlocks = true;
-
-
-    private boolean openChests = true;
-    private boolean openBarrels = true;
-    private boolean openShulkers = false;
-
-
-    private boolean useFurnaces = true;
-    private boolean useAnvils = true;
-    private boolean useCrafting = true;
-    private boolean useEnchanting = true;
+    private static final int MAX_TENANTS = 5;
 
 
 
+
+
+    // Permissions des joueurs
+
+    private final Map<UUID, RentPermission> permissions;
+
+
+
+
+
+    // ==========================
     // Blocs interdits
+    // ==========================
+
     private final Set<Material> blockedPlaceBlocks;
+
+
+
 
 
 
@@ -63,26 +75,71 @@ public class RentHouse {
 
 
         this.name = name;
+
         this.pricePerDay = pricePerDay;
 
 
-        this.trustedPlayers = new ArrayList<>();
+        this.tenants = new ArrayList<>();
+
+        this.permissions = new HashMap<>();
 
         this.blockedPlaceBlocks = new HashSet<>();
 
 
-        // Blocs interdits par défaut
 
-        blockedPlaceBlocks.add(Material.HOPPER);
-        blockedPlaceBlocks.add(Material.BARREL);
+        loadDefaultBlockedBlocks();
 
-        blockedPlaceBlocks.add(Material.CHEST);
-        blockedPlaceBlocks.add(Material.TRAPPED_CHEST);
-
-        blockedPlaceBlocks.add(Material.DISPENSER);
-        blockedPlaceBlocks.add(Material.DROPPER);
 
     }
+
+
+
+
+
+
+
+    private void loadDefaultBlockedBlocks() {
+
+
+        // Coffres
+
+        blockedPlaceBlocks.add(Material.CHEST);
+
+        blockedPlaceBlocks.add(Material.TRAPPED_CHEST);
+
+
+
+        // Stockage
+
+        blockedPlaceBlocks.add(Material.BARREL);
+
+        blockedPlaceBlocks.add(Material.HOPPER);
+
+        blockedPlaceBlocks.add(Material.DISPENSER);
+
+        blockedPlaceBlocks.add(Material.DROPPER);
+
+
+
+        // Shulkers toutes couleurs
+
+        for(Material material : Material.values()) {
+
+
+            if(material.name().contains("SHULKER_BOX")) {
+
+                blockedPlaceBlocks.add(material);
+
+            }
+
+        }
+
+
+    }
+
+
+
+
 
 
 
@@ -92,13 +149,23 @@ public class RentHouse {
 
 
     public String getName() {
+
         return name;
+
     }
+
 
 
     public double getPricePerDay() {
+
         return pricePerDay;
+
     }
+
+
+
+
+
 
 
 
@@ -114,6 +181,7 @@ public class RentHouse {
     }
 
 
+
     public void setOwner(UUID owner) {
 
         this.owner = owner;
@@ -122,74 +190,311 @@ public class RentHouse {
 
 
 
-    // ==========================
-    // Expiration
-    // ==========================
 
-
-    public long getExpireTime() {
-
-        return expireTime;
-
-    }
-
-
-    public void setExpireTime(long time) {
-
-        this.expireTime = time;
-
-    }
-
-
-    public boolean isExpired() {
-
-        return System.currentTimeMillis() > expireTime;
-
-    }
 
 
 
     // ==========================
-    // Trust
-    // ==========================
+// Temps
+// ==========================
 
 
-    public List<UUID> getTrustedPlayers() {
+public long getExpireTime() {
 
-        return trustedPlayers;
+    return expireTime;
+
+}
+
+
+
+public void setExpireTime(long expireTime) {
+
+    this.expireTime = expireTime;
+
+}
+
+
+
+
+public boolean isRented() {
+
+    return owner != null;
+
+}
+
+
+
+
+
+/**
+ * Vérifie si la location est terminée
+ */
+public boolean isExpired() {
+
+
+    if(owner == null) {
+
+        return false;
 
     }
 
 
-    public void addTrusted(UUID uuid) {
+    return expireTime <= System.currentTimeMillis();
 
-        if (!trustedPlayers.contains(uuid)) {
+}
 
-            trustedPlayers.add(uuid);
+
+
+
+
+
+/**
+ * Vérifie si la maison peut être louée
+ */
+public boolean isAvailable() {
+
+
+    return owner == null || isExpired();
+
+
+}
+
+
+
+
+
+
+
+/**
+ * Temps restant en millisecondes
+ */
+public long getRemainingTime() {
+
+
+    long remaining =
+            expireTime - System.currentTimeMillis();
+
+
+
+    if(remaining < 0) {
+
+        return 0;
+
+    }
+
+
+    return remaining;
+
+}
+
+
+
+
+
+
+
+
+/**
+ * Libère complètement la maison
+ */
+public void clearRent() {
+
+
+    owner = null;
+
+
+    expireTime = 0;
+
+
+    tenants.clear();
+
+
+    permissions.clear();
+
+
+}
+    // ==========================
+    // Colocataires
+    // ==========================
+
+
+    public boolean addTenant(UUID uuid) {
+
+
+        if(tenants.size() >= MAX_TENANTS) {
+
+            return false;
 
         }
 
+
+
+        if(!tenants.contains(uuid)) {
+
+
+            tenants.add(uuid);
+
+            permissions.put(
+                    uuid,
+                    new RentPermission()
+            );
+
+
+            return true;
+
+        }
+
+
+
+        return false;
+
     }
 
 
-    public void removeTrusted(UUID uuid) {
 
-        trustedPlayers.remove(uuid);
+
+
+
+    public void removeTenant(UUID uuid) {
+
+
+        tenants.remove(uuid);
+
+
+        permissions.remove(uuid);
+
 
     }
 
 
-    public boolean isTrusted(UUID uuid) {
 
-        return trustedPlayers.contains(uuid);
+
+
+
+
+    public boolean isTenant(UUID uuid) {
+
+
+        return tenants.contains(uuid);
+
 
     }
+
+
+
+
+
+
+
+    public List<UUID> getTenants() {
+
+
+        return tenants;
+
+
+    }
+
+
+
+
+
+
+    public int getTenantCount() {
+
+
+        return tenants.size();
+
+
+    }
+
+
+
+
+
+
+
+    public int getMaxTenants() {
+
+
+        return MAX_TENANTS;
+
+
+    }
+       // ==========================
+    // Permissions joueur
+    // ==========================
+
+
+    public RentPermission getPermission(UUID uuid) {
+
+
+        if(!permissions.containsKey(uuid)) {
+
+            permissions.put(
+                    uuid,
+                    new RentPermission()
+            );
+
+        }
+
+
+        return permissions.get(uuid);
+
+    }
+
+
+
+
+
+
+
+    public Map<UUID, RentPermission> getPermissions() {
+
+        return permissions;
+
+    }
+
+
+
+
 
 
 
     // ==========================
-    // Région
+    // Région WorldEdit
     // ==========================
+
+
+    public Location getPos1() {
+
+        return pos1;
+
+    }
+
+
+
+    public void setPos1(Location pos1) {
+
+        this.pos1 = pos1;
+
+    }
+
+
+
+    public Location getPos2() {
+
+        return pos2;
+
+    }
+
+
+
+    public void setPos2(Location pos2) {
+
+        this.pos2 = pos2;
+
+    }
+
 
 
     public String getWorldGuardRegion() {
@@ -197,6 +502,7 @@ public class RentHouse {
         return worldGuardRegion;
 
     }
+
 
 
     public void setWorldGuardRegion(String region) {
@@ -207,137 +513,13 @@ public class RentHouse {
 
 
 
-    public Location getPos1() {
-
-        return pos1;
-
-    }
 
 
-    public void setPos1(Location loc) {
-
-        this.pos1 = loc;
-
-    }
-
-
-    public Location getPos2() {
-
-        return pos2;
-
-    }
-
-
-    public void setPos2(Location loc) {
-
-        this.pos2 = loc;
-
-    }
 
 
 
     // ==========================
-    // Portes
-    // ==========================
-
-
-    public boolean canOpenDoors() {
-
-        return openDoors;
-
-    }
-
-
-    public void setOpenDoors(boolean value) {
-
-        openDoors = value;
-
-    }
-
-
-
-    public boolean canOpenTrapdoors() {
-
-        return openTrapdoors;
-
-    }
-
-
-    public void setOpenTrapdoors(boolean value) {
-
-        openTrapdoors = value;
-
-    }
-
-
-
-    public boolean canOpenFenceGates() {
-
-        return openFenceGates;
-
-    }
-
-
-    public void setOpenFenceGates(boolean value) {
-
-        openFenceGates = value;
-
-    }
-
-
-
-    // ==========================
-    // Coffres
-    // ==========================
-
-
-    public boolean canOpenChests() {
-
-        return openChests;
-
-    }
-
-
-    public void setOpenChests(boolean value) {
-
-        openChests = value;
-
-    }
-
-
-
-    public boolean canOpenBarrels() {
-
-        return openBarrels;
-
-    }
-
-
-    public void setOpenBarrels(boolean value) {
-
-        openBarrels = value;
-
-    }
-
-
-
-    public boolean canOpenShulkers() {
-
-        return openShulkers;
-
-    }
-
-
-    public void setOpenShulkers(boolean value) {
-
-        openShulkers = value;
-
-    }
-
-
-
-    // ==========================
-    // Utilitaires
+    // Blocs interdits
     // ==========================
 
 
@@ -348,6 +530,7 @@ public class RentHouse {
     }
 
 
+
     public boolean isBlockedPlace(Material material) {
 
         return blockedPlaceBlocks.contains(material);
@@ -355,11 +538,13 @@ public class RentHouse {
     }
 
 
+
     public void addBlockedPlace(Material material) {
 
         blockedPlaceBlocks.add(material);
 
     }
+
 
 
     public void removeBlockedPlace(Material material) {
@@ -370,97 +555,135 @@ public class RentHouse {
 
 
 
+
+
+
+
     // ==========================
-    // Autres blocs
+    // Classe permissions
     // ==========================
 
 
-    public boolean canPlaceBlocks() {
+    public static class RentPermission {
 
-        return placeBlocks;
+
+        // 🚪 Porte / trappe / portail
+
+        private boolean doors = true;
+
+
+
+        // 📦 Stockage
+
+        private boolean storage = true;
+
+
+
+        // ⚒️ Utilisation blocs
+
+        private boolean usage = true;
+
+
+
+        // 🪨 Poser
+
+        private boolean place = true;
+
+
+
+        // ⛏️ Casser
+
+        private boolean breakBlocks = true;
+
+
+
+
+
+
+        public boolean canDoors() {
+
+            return doors;
+
+        }
+
+
+        public void setDoors(boolean value) {
+
+            doors = value;
+
+        }
+
+
+
+
+
+        public boolean canStorage() {
+
+            return storage;
+
+        }
+
+
+        public void setStorage(boolean value) {
+
+            storage = value;
+
+        }
+
+
+
+
+
+        public boolean canUse() {
+
+            return usage;
+
+        }
+
+
+        public void setUse(boolean value) {
+
+            usage = value;
+
+        }
+
+
+
+
+
+        public boolean canPlace() {
+
+            return place;
+
+        }
+
+
+        public void setPlace(boolean value) {
+
+            place = value;
+
+        }
+
+
+
+
+
+        public boolean canBreak() {
+
+            return breakBlocks;
+
+        }
+
+
+        public void setBreak(boolean value) {
+
+            breakBlocks = value;
+
+        }
+
 
     }
 
 
-    public void setPlaceBlocks(boolean value) {
-
-        placeBlocks = value;
-
-    }
-
-
-
-    public boolean canBreakBlocks() {
-
-        return breakBlocks;
-
-    }
-
-
-    public void setBreakBlocks(boolean value) {
-
-        breakBlocks = value;
-
-    }
-
-
-
-    public boolean canUseFurnaces() {
-
-        return useFurnaces;
-
-    }
-
-
-    public void setUseFurnaces(boolean value) {
-
-        useFurnaces = value;
-
-    }
-
-
-
-    public boolean canUseAnvils() {
-
-        return useAnvils;
-
-    }
-
-
-    public void setUseAnvils(boolean value) {
-
-        useAnvils = value;
-
-    }
-
-
-
-    public boolean canUseCrafting() {
-
-        return useCrafting;
-
-    }
-
-
-    public void setUseCrafting(boolean value) {
-
-        useCrafting = value;
-
-    }
-
-
-
-    public boolean canUseEnchanting() {
-
-        return useEnchanting;
-
-    }
-
-
-    public void setUseEnchanting(boolean value) {
-
-        useEnchanting = value;
-
-    }
 
 }
