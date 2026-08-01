@@ -65,6 +65,3 @@ permissions:
   betterrent.untrust:
     description: Remove trusted players.
     default: true
-  betterrent.untrust:
-    description: Remove trusted players.
-    default: true
