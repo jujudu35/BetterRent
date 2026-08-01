@@ -1,6 +1,7 @@
 package net.betterrent;
 
 import net.betterrent.command.RentCommand;
+import net.betterrent.command.RentSettingCommand;
 import net.betterrent.listeners.BlockListener;
 import net.betterrent.listeners.DoorListener;
 import net.betterrent.listeners.InventoryListener;
@@ -61,13 +62,12 @@ public final class BetterRent extends JavaPlugin {
                     .disablePlugin(this);
 
             return;
+
         }
 
 
 
-
         rentManager = new RentManager(this);
-
 
 
         houseStorage = new HouseStorage(this);
@@ -98,7 +98,6 @@ public final class BetterRent extends JavaPlugin {
 
         getLogger().info("-------------------------------------");
         getLogger().info("BetterRent enabled successfully!");
-        getLogger().info("Version: " + getDescription().getVersion());
         getLogger().info("-------------------------------------");
 
     }
@@ -107,11 +106,11 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
     private void registerCommands() {
 
 
-        if (getCommand("rent") != null) {
-
+        if(getCommand("rent") != null) {
 
             getCommand("rent")
                     .setExecutor(
@@ -120,7 +119,20 @@ public final class BetterRent extends JavaPlugin {
 
         }
 
+
+
+        if(getCommand("rentsetting") != null) {
+
+            getCommand("rentsetting")
+                    .setExecutor(
+                            new RentSettingCommand(this)
+                    );
+
+        }
+
     }
+
+
 
 
 
@@ -165,15 +177,15 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
+
     @Override
     public void onDisable() {
 
 
-        if (houseStorage != null) {
-
+        if(houseStorage != null) {
 
             houseStorage.save();
-
 
         }
 
@@ -184,6 +196,7 @@ public final class BetterRent extends JavaPlugin {
         getLogger().info("-------------------------------------");
 
     }
+
 
 
 
