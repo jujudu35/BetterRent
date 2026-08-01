@@ -2,6 +2,7 @@ package net.betterrent.storage;
 
 import net.betterrent.BetterRent;
 import net.betterrent.model.RentHouse;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -33,7 +34,6 @@ public class HouseStorage {
 
 
     private void load() {
-
 
         file = new File(
                 plugin.getDataFolder(),
@@ -140,67 +140,41 @@ public class HouseStorage {
 
 
 
-            // Permissions locataire
+            config.set(path + ".permissions.open-doors",
+                    house.canOpenDoors());
 
-            config.set(
-                    path + ".permissions.open-doors",
-                    house.canOpenDoors()
-            );
+            config.set(path + ".permissions.open-trapdoors",
+                    house.canOpenTrapdoors());
 
-            config.set(
-                    path + ".permissions.open-trapdoors",
-                    house.canOpenTrapdoors()
-            );
+            config.set(path + ".permissions.open-fence-gates",
+                    house.canOpenFenceGates());
 
-            config.set(
-                    path + ".permissions.open-fence-gates",
-                    house.canOpenFenceGates()
-            );
+            config.set(path + ".permissions.place-blocks",
+                    house.canPlaceBlocks());
 
-            config.set(
-                    path + ".permissions.place-blocks",
-                    house.canPlaceBlocks()
-            );
+            config.set(path + ".permissions.break-blocks",
+                    house.canBreakBlocks());
 
-            config.set(
-                    path + ".permissions.break-blocks",
-                    house.canBreakBlocks()
-            );
+            config.set(path + ".permissions.open-chests",
+                    house.canOpenChests());
 
-            config.set(
-                    path + ".permissions.open-chests",
-                    house.canOpenChests()
-            );
+            config.set(path + ".permissions.open-barrels",
+                    house.canOpenBarrels());
 
-            config.set(
-                    path + ".permissions.open-barrels",
-                    house.canOpenBarrels()
-            );
+            config.set(path + ".permissions.open-shulkers",
+                    house.canOpenShulkers());
 
-            config.set(
-                    path + ".permissions.open-shulkers",
-                    house.canOpenShulkers()
-            );
+            config.set(path + ".permissions.use-furnaces",
+                    house.canUseFurnaces());
 
-            config.set(
-                    path + ".permissions.use-furnaces",
-                    house.canUseFurnaces()
-            );
+            config.set(path + ".permissions.use-anvils",
+                    house.canUseAnvils());
 
-            config.set(
-                    path + ".permissions.use-anvils",
-                    house.canUseAnvils()
-            );
+            config.set(path + ".permissions.use-crafting",
+                    house.canUseCrafting());
 
-            config.set(
-                    path + ".permissions.use-crafting",
-                    house.canUseCrafting()
-            );
-
-            config.set(
-                    path + ".permissions.use-enchanting",
-                    house.canUseEnchanting()
-            );
+            config.set(path + ".permissions.use-enchanting",
+                    house.canUseEnchanting());
 
         }
 
@@ -222,6 +196,79 @@ public class HouseStorage {
 
 
 
+    public void loadHouses() {
+
+
+        if (!config.contains("houses")) {
+
+            return;
+
+        }
+
+
+        for (String key :
+                config.getConfigurationSection("houses")
+                        .getKeys(false)) {
+
+
+            String path = "houses." + key;
+
+
+            RentHouse house = new RentHouse(
+                    config.getString(path + ".name"),
+                    config.getDouble(path + ".price")
+            );
+
+
+
+            if (config.contains(path + ".owner")) {
+
+                house.setOwner(
+                        UUID.fromString(
+                                config.getString(path + ".owner")
+                        )
+                );
+
+            }
+
+
+
+            house.setExpireTime(
+                    config.getLong(path + ".expire")
+            );
+
+
+            house.setPos1(
+                    loadLocation(path + ".pos1")
+            );
+
+
+            house.setPos2(
+                    loadLocation(path + ".pos2")
+            );
+
+
+            house.setWorldGuardRegion(
+                    config.getString(path + ".region")
+            );
+
+
+
+            plugin.getRentManager()
+                    .getHouses()
+                    .put(
+                            key,
+                            house
+                    );
+
+        }
+
+    }
+
+
+
+
+
     private void saveLocation(Location loc, String path) {
 
 
@@ -232,27 +279,41 @@ public class HouseStorage {
         }
 
 
-        config.set(
-                path + ".world",
-                loc.getWorld().getName()
-        );
+        config.set(path + ".world",
+                loc.getWorld().getName());
+
+        config.set(path + ".x",
+                loc.getX());
+
+        config.set(path + ".y",
+                loc.getY());
+
+        config.set(path + ".z",
+                loc.getZ());
+
+    }
 
 
-        config.set(
-                path + ".x",
-                loc.getX()
-        );
 
 
-        config.set(
-                path + ".y",
-                loc.getY()
-        );
+
+    private Location loadLocation(String path) {
 
 
-        config.set(
-                path + ".z",
-                loc.getZ()
+        if (!config.contains(path + ".world")) {
+
+            return null;
+
+        }
+
+
+        return new Location(
+                Bukkit.getWorld(
+                        config.getString(path + ".world")
+                ),
+                config.getDouble(path + ".x"),
+                config.getDouble(path + ".y"),
+                config.getDouble(path + ".z")
         );
 
     }
