@@ -36,11 +36,13 @@ public class InventoryListener implements Listener {
 
 
 
+
+
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
 
 
-        if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
+        if(event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
         }
 
@@ -49,7 +51,7 @@ public class InventoryListener implements Listener {
         Block block = event.getClickedBlock();
 
 
-        if (block == null) {
+        if(block == null) {
             return;
         }
 
@@ -66,23 +68,60 @@ public class InventoryListener implements Listener {
 
 
 
-        if (house == null) {
+        if(house == null) {
             return;
         }
 
 
 
         // OP
-        if (player.isOp()) {
+
+        if(player.isOp()) {
             return;
         }
 
 
 
-        // Propriétaire ou trust
-        if (isAllowed(player, house)) {
+
+
+
+        // Propriétaire
+
+        if(house.getOwner() != null
+                && house.getOwner()
+                .equals(player.getUniqueId())) {
+
             return;
+
         }
+
+
+
+
+
+
+        // Pas colocataire
+
+        if(!house.isTrusted(player.getUniqueId())) {
+
+
+            cancel(event, player);
+
+            return;
+
+        }
+
+
+
+
+
+
+
+        RentHouse.RentPermission permission =
+                house.getPermission(
+                        player.getUniqueId()
+                );
+
 
 
 
@@ -92,41 +131,24 @@ public class InventoryListener implements Listener {
 
 
 
+
         // ==========================
-        // COFFRES
+        // STOCKAGE
         // ==========================
 
 
-        if (type == Material.CHEST
-                || type == Material.TRAPPED_CHEST) {
+        if(type == Material.CHEST
+                || type == Material.TRAPPED_CHEST
+                || type == Material.BARREL
+                || type.name().endsWith("SHULKER_BOX")) {
 
 
-            if (!house.canOpenChests()) {
+
+            if(!permission.canStorage()) {
+
 
                 cancel(event, player);
 
-            }
-
-
-            return;
-
-        }
-
-
-
-
-
-        // ==========================
-        // BARILS
-        // ==========================
-
-
-        if (type == Material.BARREL) {
-
-
-            if (!house.canOpenBarrels()) {
-
-                cancel(event, player);
 
             }
 
@@ -140,123 +162,31 @@ public class InventoryListener implements Listener {
 
 
 
-        // ==========================
-        // SHULKERS
-        // ==========================
-
-
-        if (type.name().endsWith("SHULKER_BOX")) {
-
-
-            if (!house.canOpenShulkers()) {
-
-
-                cancel(event, player);
-
-            }
-
-
-            return;
-
-        }
-
-
-
-
-
 
         // ==========================
-        // FOURS
+        // UTILISATION BLOCS
         // ==========================
 
 
-        if (type == Material.FURNACE
+        if(type == Material.FURNACE
                 || type == Material.BLAST_FURNACE
-                || type == Material.SMOKER) {
+                || type == Material.SMOKER
 
-
-            if (!house.canUseFurnaces()) {
-
-
-                cancel(event, player);
-
-            }
-
-
-            return;
-
-        }
-
-
-
-
-
-
-        // ==========================
-        // ENCLUMES
-        // ==========================
-
-
-        if (type == Material.ANVIL
+                || type == Material.ANVIL
                 || type == Material.CHIPPED_ANVIL
-                || type == Material.DAMAGED_ANVIL) {
+                || type == Material.DAMAGED_ANVIL
 
+                || type == Material.CRAFTING_TABLE
 
-            if (!house.canUseAnvils()) {
-
-
-                cancel(event, player);
-
-            }
-
-
-            return;
-
-        }
+                || type == Material.ENCHANTING_TABLE) {
 
 
 
-
-
-
-        // ==========================
-        // TABLE DE CRAFT
-        // ==========================
-
-
-        if (type == Material.CRAFTING_TABLE) {
-
-
-            if (!house.canUseCrafting()) {
+            if(!permission.canUse()) {
 
 
                 cancel(event, player);
 
-            }
-
-
-            return;
-
-        }
-
-
-
-
-
-
-
-        // ==========================
-        // TABLE D'ENCHANTEMENT
-        // ==========================
-
-
-        if (type == Material.ENCHANTING_TABLE) {
-
-
-            if (!house.canUseEnchanting()) {
-
-
-                cancel(event, player);
 
             }
 
@@ -272,32 +202,12 @@ public class InventoryListener implements Listener {
 
 
 
-    private boolean isAllowed(Player player, RentHouse house) {
 
+    private void cancel(
+            PlayerInteractEvent event,
+            Player player
+    ) {
 
-        if (house.getOwner() != null
-                && house.getOwner()
-                .equals(player.getUniqueId())) {
-
-
-            return true;
-
-        }
-
-
-
-        return house.isTrusted(
-                player.getUniqueId()
-        );
-
-    }
-
-
-
-
-
-
-    private void cancel(PlayerInteractEvent event, Player player) {
 
 
         event.setCancelled(true);
@@ -306,11 +216,11 @@ public class InventoryListener implements Listener {
 
         player.sendMessage(
                 ChatColor.RED +
-                "Vous ne pouvez pas utiliser ceci dans cette location."
+                "Vous n'avez pas la permission d'utiliser ceci dans cette location."
         );
 
-    }
 
+    }
 
 
 }
