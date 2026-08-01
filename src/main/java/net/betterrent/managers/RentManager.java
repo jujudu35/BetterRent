@@ -22,13 +22,13 @@ public class RentManager {
 
 
 
-
-
     public RentManager(BetterRent plugin) {
+
 
         this.plugin = plugin;
 
         this.houses = new HashMap<>();
+
 
     }
 
@@ -84,37 +84,39 @@ public class RentManager {
 
         private final String displayName;
 
+
         private final double price;
-
-
 
 
 
         HouseType(String displayName, double price) {
 
+
             this.displayName = displayName;
 
             this.price = price;
 
+
         }
-
-
 
 
 
         public String getDisplayName() {
 
+
             return displayName;
 
-        }
 
+        }
 
 
 
 
         public double getPrice() {
 
+
             return price;
+
 
         }
 
@@ -127,10 +129,8 @@ public class RentManager {
 
 
 
-
-
     // =================================
-    // CREATION PAR TYPE
+    // CREATION MAISON
     // =================================
 
 
@@ -157,8 +157,8 @@ public class RentManager {
             number++;
 
 
-        } while(houses.containsKey(id));
-
+        }
+        while(houses.containsKey(id));
 
 
 
@@ -169,7 +169,6 @@ public class RentManager {
                         type.getDisplayName(),
                         type.getPrice()
                 );
-
 
 
 
@@ -185,58 +184,6 @@ public class RentManager {
 
 
     }
-
-
-
-
-
-
-
-    // =================================
-    // CREATION MANUELLE
-    // /rent create
-    // =================================
-
-
-    public boolean createHouse(
-            String name,
-            double price
-    ) {
-
-
-
-        if(houses.containsKey(name)) {
-
-            return false;
-
-        }
-
-
-
-
-
-        RentHouse house =
-                new RentHouse(
-                        name,
-                        price
-                );
-
-
-
-
-
-        houses.put(
-                name,
-                house
-        );
-
-
-
-        return true;
-
-    }
-
-
 
 
 
@@ -261,8 +208,6 @@ public class RentManager {
 
 
 
-
-
     // =================================
     // RECUPERATION
     // =================================
@@ -275,7 +220,6 @@ public class RentManager {
 
 
     }
-
 
 
 
@@ -293,10 +237,8 @@ public class RentManager {
 
 
 
-
-
     // =================================
-    // MAISON A UNE POSITION
+    // TROUVER MAISON POSITION
     // =================================
 
 
@@ -310,7 +252,257 @@ public class RentManager {
 
             if(house.isInside(location)) {
 
+
                 return house;
+
+
+            }
+
+
+        }
+
+
+
+        return null;
+
+
+    }
+
+
+
+
+
+
+    // =================================
+    // LOCATION
+    // =================================
+
+
+    public boolean rentHouse(
+            String id,
+            UUID player,
+            int days
+    ) {
+
+
+
+        RentHouse house =
+                getHouse(id);
+
+
+
+        if(house == null) {
+
+            return false;
+
+        }
+
+
+
+
+        if(!house.isAvailable()) {
+
+            return false;
+
+        }
+
+
+
+
+
+        house.setOwner(player);
+
+
+
+        long duration =
+                days
+                * 24L
+                * 60L
+                * 60L
+                * 1000L;
+
+
+
+
+
+        house.setExpireTime(
+                System.currentTimeMillis()
+                + duration
+        );
+
+
+
+        return true;
+
+
+    }  GRANDE_MAISON_RICHE(
+                "Grande maison riche",
+                2500000
+        );
+
+
+        private final String displayName;
+
+        private final double price;
+
+
+
+        HouseType(String displayName, double price) {
+
+            this.displayName = displayName;
+
+            this.price = price;
+
+        }
+
+
+
+        public String getDisplayName() {
+
+            return displayName;
+
+        }
+
+
+
+        public double getPrice() {
+
+            return price;
+
+        }
+
+
+    }
+
+
+
+
+
+
+
+    // =================================
+    // CREATION MAISON
+    // =================================
+
+
+    public String createHouse(HouseType type) {
+
+
+        int number = 1;
+
+        String id;
+
+
+
+        do {
+
+            id = type.name().toLowerCase()
+                    + "_"
+                    + number;
+
+
+            number++;
+
+
+        } while (houses.containsKey(id));
+
+
+
+
+
+        RentHouse house =
+                new RentHouse(
+                        type.getDisplayName(),
+                        type.getPrice()
+                );
+
+
+
+
+        houses.put(
+                id,
+                house
+        );
+
+
+
+        return id;
+
+
+    }
+
+
+
+
+
+
+
+    // =================================
+    // SUPPRESSION MAISON
+    // =================================
+
+
+    public boolean deleteHouse(String id) {
+
+
+        return houses.remove(id) != null;
+
+
+    }
+
+
+
+
+
+
+
+    // =================================
+    // RECUPERATION
+    // =================================
+
+
+    public RentHouse getHouse(String id) {
+
+
+        return houses.get(id);
+
+
+    }
+
+
+
+    public Map<String, RentHouse> getHouses() {
+
+
+        return houses;
+
+
+    }
+
+
+
+
+
+
+
+    // =================================
+    // TROUVER MAISON POSITION
+    // =================================
+
+
+    public RentHouse getHouseAt(Location location) {
+
+
+
+        for(RentHouse house : houses.values()) {
+
+
+
+            if(house.isInside(location)) {
+
+
+                return house;
+
 
             }
 
@@ -330,10 +522,8 @@ public class RentManager {
 
 
 
-
-
     // =================================
-    // LOCATION
+    // LOUER UNE MAISON
     // =================================
 
 
@@ -342,6 +532,7 @@ public class RentManager {
             UUID player,
             int days
     ) {
+
 
 
         RentHouse house =
@@ -357,6 +548,8 @@ public class RentManager {
 
 
 
+
+
         if(!house.isAvailable()) {
 
             return false;
@@ -366,18 +559,8 @@ public class RentManager {
 
 
 
-        if(house.isExpired()) {
-
-            house.clearRent();
-
-        }
-
-
-
-
 
         house.setOwner(player);
-
 
 
 
@@ -391,6 +574,7 @@ public class RentManager {
 
 
 
+
         house.setExpireTime(
                 System.currentTimeMillis()
                 + duration
@@ -400,9 +584,8 @@ public class RentManager {
 
         return true;
 
+
     }
-
-
 
 
 
@@ -421,6 +604,7 @@ public class RentManager {
     ) {
 
 
+
         RentHouse house =
                 getHouse(id);
 
@@ -432,13 +616,6 @@ public class RentManager {
 
         }
 
-
-
-        if(house.isExpired()) {
-
-            return false;
-
-        }
 
 
 
@@ -463,18 +640,14 @@ public class RentManager {
 
         return true;
 
+
     }
 
 
 
 
-
-
-
-
-
-    // =================================
-    // TRUST
+// =================================
+    // COLOCATAIRES
     // =================================
 
 
@@ -497,10 +670,12 @@ public class RentManager {
 
 
 
+
+
         return house.addTenant(uuid);
 
-    }
 
+    }
 
 
 
@@ -527,45 +702,14 @@ public class RentManager {
 
 
 
+
+
         house.removeTenant(uuid);
 
 
 
         return true;
 
-    }
-
-
-
-
-
-
-
-
-
-    public boolean isOwner(
-            String id,
-            UUID uuid
-    ) {
-
-
-        RentHouse house =
-                getHouse(id);
-
-
-
-        if(house == null) {
-
-            return false;
-
-        }
-
-
-
-        return house.getOwner() != null
-                &&
-                house.getOwner()
-                .equals(uuid);
 
     }
 
@@ -578,7 +722,7 @@ public class RentManager {
 
 
     // =================================
-    // EXPIRATION
+    // EXPIRATION DES LOCATIONS
     // =================================
 
 
@@ -613,11 +757,12 @@ public class RentManager {
 
 
     // =================================
-    // LIBERER UNE MAISON
+    // FORCER LA LIBERATION
     // =================================
 
 
     public boolean releaseHouse(String id) {
+
 
 
         RentHouse house =
@@ -633,11 +778,15 @@ public class RentManager {
 
 
 
+
+
         house.clearRent();
 
 
 
+
         return true;
+
 
     }
 
@@ -650,7 +799,7 @@ public class RentManager {
 
 
     // =================================
-    // NOMBRE DE MAISONS
+    // COMPTER LES MAISONS
     // =================================
 
 
@@ -658,6 +807,31 @@ public class RentManager {
 
 
         return houses.size();
+
+
+    }
+
+
+
+
+
+
+
+
+
+    // =================================
+    // RELOAD
+    // =================================
+
+
+    public void reload() {
+
+
+        plugin.getLogger()
+                .info(
+                        houses.size()
+                        + " maisons chargées."
+                );
 
 
     }
