@@ -28,6 +28,7 @@ public class RentHouse {
 
 
     private Location pos1;
+
     private Location pos2;
 
 
@@ -36,7 +37,15 @@ public class RentHouse {
 
 
 
+    // =========================
+    // COLOCATAIRES
+    // =========================
+
     private final List<UUID> trustedPlayers;
+
+    private static final int MAX_TENANTS = 5;
+
+
 
 
 
@@ -77,12 +86,16 @@ public class RentHouse {
 
 
 
+
+
     // =========================
     // BLOCS INTERDITS
     // =========================
 
 
     private final Set<Material> blockedPlaceBlocks;
+
+
 
 
 
@@ -101,14 +114,55 @@ public class RentHouse {
         this.blockedPlaceBlocks = new HashSet<>();
 
 
-        blockedPlaceBlocks.add(Material.HOPPER);
-        blockedPlaceBlocks.add(Material.BARREL);
-        blockedPlaceBlocks.add(Material.CHEST);
-        blockedPlaceBlocks.add(Material.TRAPPED_CHEST);
-        blockedPlaceBlocks.add(Material.DISPENSER);
-        blockedPlaceBlocks.add(Material.DROPPER);
+        loadDefaultBlockedBlocks();
 
     }
+
+
+
+
+
+
+    private void loadDefaultBlockedBlocks() {
+
+
+
+        blockedPlaceBlocks.add(Material.HOPPER);
+
+        blockedPlaceBlocks.add(Material.BARREL);
+
+        blockedPlaceBlocks.add(Material.CHEST);
+
+        blockedPlaceBlocks.add(Material.TRAPPED_CHEST);
+
+        blockedPlaceBlocks.add(Material.DISPENSER);
+
+        blockedPlaceBlocks.add(Material.DROPPER);
+
+
+
+        // Toutes les shulkers
+
+        for(Material material : Material.values()) {
+
+
+            if(material.name().contains("SHULKER_BOX")) {
+
+
+                blockedPlaceBlocks.add(material);
+
+
+            }
+
+
+        }
+
+
+    }
+
+
+
+
 
 
 
@@ -122,7 +176,7 @@ public class RentHouse {
     public boolean isInside(Location location) {
 
 
-        if (pos1 == null || pos2 == null) {
+        if(pos1 == null || pos2 == null) {
 
             return false;
 
@@ -130,7 +184,7 @@ public class RentHouse {
 
 
 
-        if (!location.getWorld()
+        if(!location.getWorld()
                 .equals(pos1.getWorld())) {
 
             return false;
@@ -140,15 +194,21 @@ public class RentHouse {
 
 
         double minX = Math.min(pos1.getX(), pos2.getX());
+
         double maxX = Math.max(pos1.getX(), pos2.getX());
 
 
+
         double minY = Math.min(pos1.getY(), pos2.getY());
+
         double maxY = Math.max(pos1.getY(), pos2.getY());
 
 
+
         double minZ = Math.min(pos1.getZ(), pos2.getZ());
+
         double maxZ = Math.max(pos1.getZ(), pos2.getZ());
+
 
 
 
@@ -166,12 +226,6 @@ public class RentHouse {
 
 
 
-
-
-
-    // =========================
-    // LOCATION SET
-    // =========================
 
 
     public Location getPos1() {
@@ -226,6 +280,56 @@ public class RentHouse {
 
 
 
+    public boolean isExpired() {
+
+
+        if(owner == null) {
+
+            return false;
+
+        }
+
+
+        return expireTime <= System.currentTimeMillis();
+
+    }
+
+
+
+
+
+
+    public boolean isAvailable() {
+
+
+        return owner == null
+                || isExpired();
+
+
+    }
+
+
+
+
+
+
+
+    public void clearRent() {
+
+
+        owner = null;
+
+        expireTime = 0;
+
+        trustedPlayers.clear();
+
+
+    }
+
+
+
+
+
 
     public UUID getOwner() {
 
@@ -271,16 +375,36 @@ public class RentHouse {
     // =========================
 
 
-    public void addTrusted(UUID uuid) {
+    public boolean addTrusted(UUID uuid) {
 
 
-        if (!trustedPlayers.contains(uuid)) {
 
-            trustedPlayers.add(uuid);
+        if(trustedPlayers.size() >= MAX_TENANTS) {
+
+            return false;
 
         }
 
+
+
+
+        if(!trustedPlayers.contains(uuid)) {
+
+
+            trustedPlayers.add(uuid);
+
+
+            return true;
+
+        }
+
+
+
+        return false;
+
+
     }
+
 
 
 
@@ -288,9 +412,12 @@ public class RentHouse {
 
     public void removeTrusted(UUID uuid) {
 
+
         trustedPlayers.remove(uuid);
 
+
     }
+
 
 
 
@@ -298,7 +425,9 @@ public class RentHouse {
 
     public boolean isTrusted(UUID uuid) {
 
+
         return trustedPlayers.contains(uuid);
+
 
     }
 
@@ -306,9 +435,12 @@ public class RentHouse {
 
 
 
+
     public void clearTrusted() {
 
+
         trustedPlayers.clear();
+
 
     }
 
@@ -318,49 +450,9 @@ public class RentHouse {
 
     public List<UUID> getTrustedPlayers() {
 
+
         return trustedPlayers;
 
-    }
-
-
-
-
-
-
-
-
-
-    // =========================
-    // DOORS
-    // =========================
-
-
-    public boolean canOpenDoors() {
-
-        return openDoors;
-
-    }
-
-
-    public void setOpenDoors(boolean value) {
-
-        openDoors = value;
-
-    }
-
-
-
-
-    public boolean canOpenTrapdoors() {
-
-        return openTrapdoors;
-
-    }
-
-
-    public void setOpenTrapdoors(boolean value) {
-
-        openTrapdoors = value;
 
     }
 
@@ -368,115 +460,14 @@ public class RentHouse {
 
 
 
-    public boolean canOpenFenceGates() {
+    public int getMaxTenants() {
 
-        return openFenceGates;
+
+        return MAX_TENANTS;
+
 
     }
 
-
-    public void setOpenFenceGates(boolean value) {
-
-        openFenceGates = value;
-
-    }
-
-
-
-
-
-
-
-
-
-    // =========================
-    // BLOCS
-    // =========================
-
-
-    public boolean canPlaceBlocks() {
-
-        return placeBlocks;
-
-    }
-
-
-    public void setPlaceBlocks(boolean value) {
-
-        placeBlocks = value;
-
-    }
-
-
-
-
-    public boolean canBreakBlocks() {
-
-        return breakBlocks;
-
-    }
-
-
-    public void setBreakBlocks(boolean value) {
-
-        breakBlocks = value;
-
-    }
-
-
-
-
-
-
-    // =========================
-    // INVENTAIRES
-    // =========================
-
-
-    public boolean canOpenChests() {
-
-        return openChests;
-
-    }
-
-
-    public void setOpenChests(boolean value) {
-
-        openChests = value;
-
-    }
-
-
-
-
-    public boolean canOpenBarrels() {
-
-        return openBarrels;
-
-    }
-
-
-    public void setOpenBarrels(boolean value) {
-
-        openBarrels = value;
-
-    }
-
-
-
-
-    public boolean canOpenShulkers() {
-
-        return openShulkers;
-
-    }
-
-
-    public void setOpenShulkers(boolean value) {
-
-        openShulkers = value;
-
-    }
 
 
 
@@ -492,36 +483,50 @@ public class RentHouse {
 
     public Set<Material> getBlockedPlaceBlocks() {
 
+
         return blockedPlaceBlocks;
 
+
     }
+
 
 
 
 
     public boolean isBlockedPlace(Material material) {
 
+
         return blockedPlaceBlocks.contains(material);
 
+
     }
+
 
 
 
 
     public void addBlockedPlace(Material material) {
 
+
         blockedPlaceBlocks.add(material);
 
+
     }
+
 
 
 
 
     public void removeBlockedPlace(Material material) {
 
+
         blockedPlaceBlocks.remove(material);
 
+
     }
+
+
+
 
 
 
@@ -535,32 +540,46 @@ public class RentHouse {
 
     public String getName() {
 
+
         return name;
 
+
     }
+
+
 
 
     public double getPricePerDay() {
 
+
         return pricePerDay;
 
+
     }
+
+
 
 
 
     public String getWorldGuardRegion() {
 
+
         return worldGuardRegion;
 
+
     }
+
 
 
 
     public void setWorldGuardRegion(String region) {
 
+
         this.worldGuardRegion = region;
 
+
     }
+
 
 
 }
