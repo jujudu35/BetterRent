@@ -1,27 +1,44 @@
 package net.betterrent.listeners;
 
+
 import net.betterrent.BetterRent;
 import net.betterrent.model.RentHouse;
+import net.betterrent.utils.RegionUtil;
+
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
+
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+
+
 
 public class BlockListener implements Listener {
 
 
     private final BetterRent plugin;
 
+    private final RegionUtil regionUtil;
+
+
 
     public BlockListener(BetterRent plugin) {
 
         this.plugin = plugin;
+        this.regionUtil = new RegionUtil(plugin);
 
     }
 
+
+
+    // ==========================
+    // CASSER DES BLOCS
+    // ==========================
 
 
     @EventHandler
@@ -31,7 +48,10 @@ public class BlockListener implements Listener {
         Player player = event.getPlayer();
 
 
-        RentHouse house = getHouseAt(event.getBlock().getLocation());
+        RentHouse house =
+                regionUtil.getHouseAt(
+                        event.getBlock().getLocation()
+                );
 
 
         if (house == null) {
@@ -40,17 +60,16 @@ public class BlockListener implements Listener {
 
 
 
-        // OP ou propriétaire
+        // OP
         if (player.isOp()) {
             return;
         }
 
 
-        if (house.getOwner() != null &&
-                house.getOwner().equals(player.getUniqueId())) {
 
+        // Propriétaire
+        if (isAllowed(player, house)) {
             return;
-
         }
 
 
@@ -63,7 +82,7 @@ public class BlockListener implements Listener {
 
             player.sendMessage(
                     ChatColor.RED +
-                    "Vous ne pouvez pas casser de blocs dans cette maison."
+                    "Vous ne pouvez pas casser de blocs dans cette location."
             );
 
         }
@@ -73,6 +92,10 @@ public class BlockListener implements Listener {
 
 
 
+    // ==========================
+    // POSER DES BLOCS
+    // ==========================
+
 
     @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
@@ -81,7 +104,15 @@ public class BlockListener implements Listener {
         Player player = event.getPlayer();
 
 
-        RentHouse house = getHouseAt(event.getBlock().getLocation());
+        Block block = event.getBlockPlaced();
+
+
+
+        RentHouse house =
+                regionUtil.getHouseAt(
+                        block.getLocation()
+                );
+
 
 
         if (house == null) {
@@ -90,22 +121,21 @@ public class BlockListener implements Listener {
 
 
 
-        // OP ou propriétaire
+        // OP
         if (player.isOp()) {
             return;
         }
 
 
-        if (house.getOwner() != null &&
-                house.getOwner().equals(player.getUniqueId())) {
 
+        // Propriétaire / Trust
+        if (isAllowed(player, house)) {
             return;
-
         }
 
 
 
-
+        // Permission poser
         if (!house.canPlaceBlocks()) {
 
 
@@ -114,8 +144,9 @@ public class BlockListener implements Listener {
 
             player.sendMessage(
                     ChatColor.RED +
-                    "Vous ne pouvez pas poser de blocs dans cette maison."
+                    "Vous ne pouvez pas poser de blocs ici."
             );
+
 
             return;
 
@@ -123,10 +154,8 @@ public class BlockListener implements Listener {
 
 
 
-        // Blocs interdits
-        if (house.isBlockedPlace(
-                event.getBlockPlaced().getType()
-        )) {
+        // Bloc interdit
+        if (house.isBlockedPlace(block.getType())) {
 
 
             event.setCancelled(true);
@@ -137,6 +166,7 @@ public class BlockListener implements Listener {
                     "Ce bloc est interdit dans une location."
             );
 
+
         }
 
     }
@@ -145,80 +175,24 @@ public class BlockListener implements Listener {
 
 
 
-    private RentHouse getHouseAt(Location location) {
+    private boolean isAllowed(Player player, RentHouse house) {
 
 
-        for (RentHouse house :
-                plugin.getRentManager()
-                        .getHouses()
-                        .values()) {
+        if (house.getOwner() != null
+                && house.getOwner()
+                .equals(player.getUniqueId())) {
 
-
-            if (!house.hasLocation()) {
-                continue;
-            }
-
-
-            if (!location.getWorld()
-                    .equals(house.getPos1().getWorld())) {
-
-                continue;
-
-            }
-
-
-
-            double minX = Math.min(
-                    house.getPos1().getX(),
-                    house.getPos2().getX()
-            );
-
-            double maxX = Math.max(
-                    house.getPos1().getX(),
-                    house.getPos2().getX()
-            );
-
-
-            double minY = Math.min(
-                    house.getPos1().getY(),
-                    house.getPos2().getY()
-            );
-
-            double maxY = Math.max(
-                    house.getPos1().getY(),
-                    house.getPos2().getY()
-            );
-
-
-            double minZ = Math.min(
-                    house.getPos1().getZ(),
-                    house.getPos2().getZ()
-            );
-
-            double maxZ = Math.max(
-                    house.getPos1().getZ(),
-                    house.getPos2().getZ()
-            );
-
-
-
-            if (location.getX() >= minX &&
-                    location.getX() <= maxX &&
-                    location.getY() >= minY &&
-                    location.getY() <= maxY &&
-                    location.getZ() >= minZ &&
-                    location.getZ() <= maxZ) {
-
-
-                return house;
-
-            }
+            return true;
 
         }
 
 
-        return null;
+
+        return house.isTrusted(
+                player.getUniqueId()
+        );
 
     }
+
 
 }
