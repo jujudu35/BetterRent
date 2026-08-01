@@ -1,4 +1,4 @@
-package net.betterrent.task;
+ackage net.betterrent.task;
 
 import net.betterrent.BetterRent;
 import net.betterrent.model.RentHouse;
@@ -6,10 +6,12 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.Map;
 
+
 public class RentExpireTask extends BukkitRunnable {
 
 
     private final BetterRent plugin;
+
 
 
     public RentExpireTask(BetterRent plugin) {
@@ -17,6 +19,8 @@ public class RentExpireTask extends BukkitRunnable {
         this.plugin = plugin;
 
     }
+
+
 
 
 
@@ -34,46 +38,51 @@ public class RentExpireTask extends BukkitRunnable {
                         .entrySet()) {
 
 
+
             RentHouse house = entry.getValue();
 
 
 
-            if (house.getOwner() != null
-                    && house.getExpireTime() <= System.currentTimeMillis()) {
+
+            if (house.isExpired()) {
 
 
 
-                house.setOwner(null);
+                plugin.getLogger().info(
+                        "La maison "
+                        + house.getName()
+                        + " est maintenant disponible à la location."
+                );
 
-                house.setExpireTime(0);
 
 
-                house.getTrustedPlayers()
-                        .clear();
+                house.clearRent();
+
 
 
                 changed = true;
 
 
-
-                plugin.getLogger().info(
-                        "La location " +
-                        house.getName() +
-                        " a expiré."
-                );
-
             }
+
 
         }
 
 
 
-        if (changed) {
+
+
+        if(changed) {
+
 
             plugin.getHouseStorage()
                     .save();
 
+
         }
 
+
     }
+
+
 }
