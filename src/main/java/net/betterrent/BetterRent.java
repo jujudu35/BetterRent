@@ -2,15 +2,20 @@ package net.betterrent;
 
 import net.betterrent.command.RentCommand;
 import net.betterrent.command.RentSettingCommand;
+
 import net.betterrent.listeners.BlockListener;
 import net.betterrent.listeners.DoorListener;
 import net.betterrent.listeners.InventoryListener;
 import net.betterrent.listeners.SignListener;
+
 import net.betterrent.managers.ConfigManager;
 import net.betterrent.managers.HookManager;
 import net.betterrent.managers.RentManager;
+
 import net.betterrent.storage.HouseStorage;
+
 import net.betterrent.task.RentExpireTask;
+
 import net.betterrent.worldedit.SelectionManager;
 
 import org.bukkit.Bukkit;
@@ -24,9 +29,13 @@ public final class BetterRent extends JavaPlugin {
 
 
     private ConfigManager configManager;
+
     private HookManager hookManager;
+
     private RentManager rentManager;
+
     private HouseStorage houseStorage;
+
     private SelectionManager selectionManager;
 
 
@@ -38,14 +47,22 @@ public final class BetterRent extends JavaPlugin {
         instance = this;
 
 
+
         saveDefaultConfig();
 
 
 
-        configManager = new ConfigManager(this);
+        /*
+         * Managers
+         */
+
+        configManager =
+                new ConfigManager(this);
 
 
-        hookManager = new HookManager(this);
+
+        hookManager =
+                new HookManager(this);
 
 
 
@@ -53,7 +70,7 @@ public final class BetterRent extends JavaPlugin {
 
 
             getLogger().severe("-------------------------------------");
-            getLogger().severe("BetterRent failed to start.");
+            getLogger().severe("BetterRent impossible to start.");
             getLogger().severe("Missing dependency.");
             getLogger().severe("-------------------------------------");
 
@@ -61,74 +78,63 @@ public final class BetterRent extends JavaPlugin {
             Bukkit.getPluginManager()
                     .disablePlugin(this);
 
+
             return;
 
         }
 
 
 
-        rentManager = new RentManager(this);
+        rentManager =
+                new RentManager(this);
 
 
-        houseStorage = new HouseStorage(this);
+
+        houseStorage =
+                new HouseStorage(this);
+
+
+
+        selectionManager =
+                new SelectionManager(this);
+
+
 
         houseStorage.loadHouses();
 
 
 
-        selectionManager = new SelectionManager(this);
 
-
-
-        registerCommands();
-
+        /*
+         * Listeners
+         */
 
         registerListeners();
 
 
 
-        new RentExpireTask(this)
-                .runTaskTimer(
-                        this,
-                        20L * 60L,
-                        20L * 60L
-                );
+
+        /*
+         * Commands
+         */
+
+        registerCommands();
+
+
+
+
+        /*
+         * Tasks
+         */
+
+        startTasks();
+
 
 
 
         getLogger().info("-------------------------------------");
-        getLogger().info("BetterRent enabled successfully!");
+        getLogger().info("BetterRent enabled !");
         getLogger().info("-------------------------------------");
-
-    }
-
-
-
-
-
-
-    private void registerCommands() {
-
-
-        if(getCommand("rent") != null) {
-
-            getCommand("rent")
-                    .setExecutor(
-                            new RentCommand(this)
-                    );
-
-        }
-
-
-
-        if(getCommand("rentsetting") != null) {
-
-            getCommand("rentsetting")
-                    .setExecutor(
-                            new RentSettingCommand(this)
-                    );
-
-        }
 
     }
 
@@ -171,7 +177,67 @@ public final class BetterRent extends JavaPlugin {
                         this
                 );
 
+
     }
+
+
+
+
+
+
+
+
+    private void registerCommands() {
+
+
+        if (getCommand("rent") != null) {
+
+
+            getCommand("rent")
+                    .setExecutor(
+                            new RentCommand(this)
+                    );
+
+
+        }
+
+
+
+        if (getCommand("rentsetting") != null) {
+
+
+            getCommand("rentsetting")
+                    .setExecutor(
+                            new RentSettingCommand(this)
+                    );
+
+
+        }
+
+
+    }
+
+
+
+
+
+
+
+
+    private void startTasks() {
+
+
+        new RentExpireTask(this)
+                .runTaskTimer(
+                        this,
+                        20L * 60,
+                        20L * 60
+                );
+
+
+    }
+
+
 
 
 
@@ -183,9 +249,11 @@ public final class BetterRent extends JavaPlugin {
     public void onDisable() {
 
 
-        if(houseStorage != null) {
+        if (houseStorage != null) {
+
 
             houseStorage.save();
+
 
         }
 
@@ -195,7 +263,11 @@ public final class BetterRent extends JavaPlugin {
         getLogger().info("BetterRent disabled.");
         getLogger().info("-------------------------------------");
 
+
     }
+
+
+
 
 
 
@@ -204,9 +276,14 @@ public final class BetterRent extends JavaPlugin {
 
     public static BetterRent getInstance() {
 
+
         return instance;
 
+
     }
+
+
+
 
 
 
@@ -214,9 +291,14 @@ public final class BetterRent extends JavaPlugin {
 
     public ConfigManager getConfigManager() {
 
+
         return configManager;
 
+
     }
+
+
+
 
 
 
@@ -224,9 +306,14 @@ public final class BetterRent extends JavaPlugin {
 
     public HookManager getHookManager() {
 
+
         return hookManager;
 
+
     }
+
+
+
 
 
 
@@ -234,9 +321,14 @@ public final class BetterRent extends JavaPlugin {
 
     public RentManager getRentManager() {
 
+
         return rentManager;
 
+
     }
+
+
+
 
 
 
@@ -244,9 +336,14 @@ public final class BetterRent extends JavaPlugin {
 
     public HouseStorage getHouseStorage() {
 
+
         return houseStorage;
 
+
     }
+
+
+
 
 
 
@@ -254,8 +351,11 @@ public final class BetterRent extends JavaPlugin {
 
     public SelectionManager getSelectionManager() {
 
+
         return selectionManager;
 
+
     }
+
 
 }
