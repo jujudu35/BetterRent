@@ -193,8 +193,7 @@ public class RentHouse {
 
 
 
-
-    // ==========================
+// ==========================
 // Temps
 // ==========================
 
@@ -420,7 +419,7 @@ public void clearRent() {
 
 
     }
-       // ==========================
+    // ==========================
     // Permissions joueur
     // ==========================
 
@@ -558,7 +557,101 @@ public void clearRent() {
 
 
 
+// ==========================
+// COMPATIBILITÉ LISTENERS
+// ==========================
 
+public boolean canOpenDoors() {
+
+    return true;
+
+}
+
+
+public boolean canOpenTrapdoors() {
+
+    return true;
+
+}
+
+
+public boolean canOpenFenceGates() {
+
+    return true;
+
+}
+
+
+
+public boolean canPlaceBlocks() {
+
+    return true;
+
+}
+
+
+
+public boolean canBreakBlocks() {
+
+    return true;
+
+}
+
+
+
+public boolean canOpenChests() {
+
+    return true;
+
+}
+
+
+
+public boolean canOpenBarrels() {
+
+    return true;
+
+}
+
+
+
+public boolean canOpenShulkers() {
+
+    return false;
+
+}
+
+
+
+public boolean canUseFurnaces() {
+
+    return true;
+
+}
+
+
+
+public boolean canUseAnvils() {
+
+    return true;
+
+}
+
+
+
+public boolean canUseCrafting() {
+
+    return true;
+
+}
+
+
+
+public boolean canUseEnchanting() {
+
+    return true;
+
+}
     // ==========================
     // Classe permissions
     // ==========================
