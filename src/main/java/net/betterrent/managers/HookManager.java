@@ -2,6 +2,7 @@ package net.betterrent.managers;
 
 import net.betterrent.BetterRent;
 import net.betterrent.hook.*;
+import net.milkbowl.vault.economy.Economy;
 
 public class HookManager {
 
@@ -19,7 +20,9 @@ public class HookManager {
         vaultHook = new VaultHook(plugin);
         worldEditHook = new WorldEditHook(plugin);
         worldGuardHook = new WorldGuardHook(plugin);
+
     }
+
 
 
     public boolean setup() {
@@ -27,20 +30,55 @@ public class HookManager {
         return vaultHook.setup()
                 && worldEditHook.setup()
                 && worldGuardHook.setup();
+
     }
+
+
+
 
 
     public VaultHook getVaultHook() {
+
         return vaultHook;
+
     }
+
 
 
     public WorldEditHook getWorldEditHook() {
+
         return worldEditHook;
+
     }
+
 
 
     public WorldGuardHook getWorldGuardHook() {
+
         return worldGuardHook;
+
     }
+
+
+
+
+
+    // =========================
+    // VAULT ECONOMY
+    // =========================
+
+    public Economy getEconomy() {
+
+
+        if (vaultHook == null) {
+
+            return null;
+
+        }
+
+
+        return vaultHook.getEconomy();
+
+    }
+
 }
