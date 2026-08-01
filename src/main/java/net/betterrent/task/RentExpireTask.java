@@ -1,4 +1,4 @@
-ackage net.betterrent.task;
+package net.betterrent.task;
 
 import net.betterrent.BetterRent;
 import net.betterrent.model.RentHouse;
