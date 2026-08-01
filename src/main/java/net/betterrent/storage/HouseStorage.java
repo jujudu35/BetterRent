@@ -1,4 +1,18 @@
+package net.betterrent.storage;
 
+import net.betterrent.BetterRent;
+import net.betterrent.model.RentHouse;
+import org.bukkit.Location;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Map;
+import java.util.UUID;
+
+
+public class HouseStorage {
 public void save() {
 
 
