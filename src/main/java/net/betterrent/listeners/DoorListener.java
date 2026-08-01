@@ -11,14 +11,11 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.block.Action;
 
-
 public class DoorListener implements Listener {
 
 
     private final BetterRent plugin;
-
     private final RegionUtil regionUtil;
-
 
 
     public DoorListener(BetterRent plugin) {
@@ -27,8 +24,6 @@ public class DoorListener implements Listener {
         this.regionUtil = new RegionUtil(plugin);
 
     }
-
-
 
 
     @EventHandler
@@ -40,7 +35,6 @@ public class DoorListener implements Listener {
         }
 
 
-
         Block block = event.getClickedBlock();
 
 
@@ -49,9 +43,7 @@ public class DoorListener implements Listener {
         }
 
 
-
         String type = block.getType().name();
-
 
 
         if (!type.contains("DOOR")
@@ -59,20 +51,15 @@ public class DoorListener implements Listener {
                 && !type.contains("FENCE_GATE")) {
 
             return;
-
         }
-
 
 
         Player player = event.getPlayer();
 
 
-
-        RentHouse house =
-                regionUtil.getHouseAt(
-                        block.getLocation()
-                );
-
+        RentHouse house = regionUtil.getHouseAt(
+                block.getLocation()
+        );
 
 
         if (house == null) {
@@ -80,31 +67,51 @@ public class DoorListener implements Listener {
         }
 
 
-
-        // OP bypass
+        // Admin bypass
         if (player.isOp()) {
             return;
         }
 
 
-
-        // Propriétaire bypass
+        // Propriétaire
         if (house.getOwner() != null
-                && house.getOwner()
-                .equals(player.getUniqueId())) {
+                && house.getOwner().equals(player.getUniqueId())) {
 
             return;
+        }
 
+
+        // Joueur ajouté avec /rent trust
+        if (house.isTrusted(player.getUniqueId())) {
+
+            return;
         }
 
 
 
-        /*
-         * Permissions
-         */
+        // =====================
+        // Portes
+        // =====================
+
+        if (type.contains("DOOR")
+                && !type.contains("TRAPDOOR")) {
 
 
+            if (!house.canOpenDoors()) {
+
+                cancel(event, player);
+
+            }
+
+            return;
+        }
+
+
+
+        // =====================
         // Trappes
+        // =====================
+
         if (type.contains("TRAPDOOR")) {
 
 
@@ -115,28 +122,14 @@ public class DoorListener implements Listener {
             }
 
             return;
-
         }
 
 
 
-        // Portes normales
-        if (type.contains("DOOR")) {
-
-
-            if (!house.canOpenDoors()) {
-
-                cancel(event, player);
-
-            }
-
-            return;
-
-        }
-
-
-
+        // =====================
         // Portails
+        // =====================
+
         if (type.contains("FENCE_GATE")) {
 
 
@@ -147,13 +140,9 @@ public class DoorListener implements Listener {
             }
 
             return;
-
         }
 
-
     }
-
-
 
 
 
@@ -167,6 +156,10 @@ public class DoorListener implements Listener {
                 ChatColor.RED +
                 "Vous ne pouvez pas ouvrir ceci dans cette location."
         );
+
+    }
+
+}
 
     }
 
