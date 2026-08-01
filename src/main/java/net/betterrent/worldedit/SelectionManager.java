@@ -1,84 +1,74 @@
 package net.betterrent.worldedit;
 
+import com.sk89q.worldedit.LocalSession;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.WorldEditPlugin;
-import com.sk89q.worldedit.bukkit.selections.Selection;
+import com.sk89q.worldedit.math.BlockVector3;
+import com.sk89q.worldedit.regions.Region;
 import net.betterrent.BetterRent;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 public class SelectionManager {
 
-
     private final BetterRent plugin;
 
-
     public SelectionManager(BetterRent plugin) {
-
         this.plugin = plugin;
-
     }
 
-
-
-    public Selection getSelection(Player player) {
-
+    private Region getSelection(Player player) {
 
         WorldEditPlugin worldEdit =
                 plugin.getHookManager()
                         .getWorldEditHook()
                         .getWorldEdit();
 
-
         if (worldEdit == null) {
-
             return null;
-
         }
 
-
-        return worldEdit.getSelection(player);
-
+        try {
+            LocalSession session = worldEdit.getSession(player);
+            return session.getSelection(BukkitAdapter.adapt(player.getWorld()));
+        } catch (Exception e) {
+            return null;
+        }
     }
-
-
-
 
     public Location getPos1(Player player) {
 
+        Region region = getSelection(player);
 
-        Selection selection = getSelection(player);
-
-
-        if (selection == null) {
-
+        if (region == null) {
             return null;
-
         }
 
+        BlockVector3 min = region.getMinimumPoint();
 
-        return selection.getMinimumPoint();
-
+        return new Location(
+                player.getWorld(),
+                min.x(),
+                min.y(),
+                min.z()
+        );
     }
-
-
-
-
 
     public Location getPos2(Player player) {
 
+        Region region = getSelection(player);
 
-        Selection selection = getSelection(player);
-
-
-        if (selection == null) {
-
+        if (region == null) {
             return null;
-
         }
 
+        BlockVector3 max = region.getMaximumPoint();
 
-        return selection.getMaximumPoint();
-
+        return new Location(
+                player.getWorld(),
+                max.x(),
+                max.y(),
+                max.z()
+        );
     }
-
 }
