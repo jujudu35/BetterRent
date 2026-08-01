@@ -33,10 +33,15 @@ public class RentHouse {
     private final List<UUID> trustedPlayers;
 
 
-    // Permissions du locataire
+
+    // ==========================
+    // Permissions locataire
+    // ==========================
+
     private boolean openDoors = true;
     private boolean openTrapdoors = true;
     private boolean openFenceGates = true;
+
 
     private boolean placeBlocks = true;
     private boolean breakBlocks = true;
@@ -53,8 +58,13 @@ public class RentHouse {
     private boolean useEnchanting = true;
 
 
-    // Blocs interdits à poser
+
+    // ==========================
+    // Blocs interdits
+    // ==========================
+
     private final Set<Material> blockedPlaceBlocks;
+
 
 
     public RentHouse(String name, double pricePerDay) {
@@ -67,7 +77,7 @@ public class RentHouse {
         this.blockedPlaceBlocks = new HashSet<>();
 
 
-        // Blocage par défaut
+        // Blocs interdits par défaut
         blockedPlaceBlocks.add(Material.HOPPER);
         blockedPlaceBlocks.add(Material.BARREL);
         blockedPlaceBlocks.add(Material.CHEST);
@@ -75,141 +85,119 @@ public class RentHouse {
         blockedPlaceBlocks.add(Material.DISPENSER);
         blockedPlaceBlocks.add(Material.DROPPER);
 
-
-        // Toutes les shulkers
-        for (Material material : Material.values()) {
-
-            if (material.name().endsWith("SHULKER_BOX")) {
-
-                blockedPlaceBlocks.add(material);
-
-            }
-
-        }
-
     }
 
+
+
+    // ==========================
+    // Informations maison
+    // ==========================
 
 
     public String getName() {
-
         return name;
-
     }
-
 
 
     public double getPricePerDay() {
-
         return pricePerDay;
-
     }
 
+
+
+    // ==========================
+    // Propriétaire
+    // ==========================
 
 
     public UUID getOwner() {
-
         return owner;
-
     }
-
 
 
     public void setOwner(UUID owner) {
-
         this.owner = owner;
-
     }
 
+
+
+    // ==========================
+    // Expiration
+    // ==========================
 
 
     public long getExpireTime() {
-
         return expireTime;
-
     }
-
 
 
     public void setExpireTime(long expireTime) {
-
         this.expireTime = expireTime;
+    }
+
+
+
+    public boolean isExpired() {
+
+        return System.currentTimeMillis() > expireTime;
 
     }
 
 
 
-    public boolean isRented() {
-
-        return owner != null &&
-                expireTime > System.currentTimeMillis();
-
-    }
-
+    // ==========================
+    // Région
+    // ==========================
 
 
     public Location getPos1() {
-
         return pos1;
-
     }
-
 
 
     public void setPos1(Location pos1) {
-
         this.pos1 = pos1;
-
     }
-
 
 
     public Location getPos2() {
-
         return pos2;
-
     }
-
 
 
     public void setPos2(Location pos2) {
-
         this.pos2 = pos2;
-
     }
-
-
-
-    public boolean hasLocation() {
-
-        return pos1 != null && pos2 != null;
-
-    }
-
 
 
     public String getWorldGuardRegion() {
-
         return worldGuardRegion;
+    }
 
+
+    public void setWorldGuardRegion(String region) {
+        this.worldGuardRegion = region;
     }
 
 
 
-   public void setWorldGuardRegion(String region) {
-
-    this.worldGuardRegion = region;
-
-}
+    // ==========================
+    // Joueurs trust
+    // ==========================
 
 
+    public List<UUID> getTrustedPlayers() {
 
-public List<UUID> getTrustedPlayers() {
+        return trustedPlayers;
 
-    return trustedPlayers;
+    }
 
-}
 
+    public boolean isTrusted(UUID uuid) {
+
+        return trustedPlayers.contains(uuid);
+
+    }
 
 
     public void addTrusted(UUID uuid) {
@@ -223,7 +211,6 @@ public List<UUID> getTrustedPlayers() {
     }
 
 
-
     public void removeTrusted(UUID uuid) {
 
         trustedPlayers.remove(uuid);
@@ -232,201 +219,160 @@ public List<UUID> getTrustedPlayers() {
 
 
 
-    public boolean isTrusted(UUID uuid) {
-
-        return trustedPlayers.contains(uuid);
-
-    }
-
-
-
     // ==========================
-    // PERMISSIONS
+    // Portes
     // ==========================
 
 
     public boolean canOpenDoors() {
-
         return openDoors;
-
     }
 
 
     public void setOpenDoors(boolean value) {
-
         openDoors = value;
-
     }
 
 
 
     public boolean canOpenTrapdoors() {
-
         return openTrapdoors;
-
     }
 
 
     public void setOpenTrapdoors(boolean value) {
-
         openTrapdoors = value;
-
     }
 
 
 
     public boolean canOpenFenceGates() {
-
         return openFenceGates;
-
     }
 
 
     public void setOpenFenceGates(boolean value) {
-
         openFenceGates = value;
-
-    }
-
-
-
-    public boolean canPlaceBlocks() {
-
-        return placeBlocks;
-
-    }
-
-
-    public void setPlaceBlocks(boolean value) {
-
-        placeBlocks = value;
-
-    }
-
-
-
-    public boolean canBreakBlocks() {
-
-        return breakBlocks;
-
-    }
-
-
-    public void setBreakBlocks(boolean value) {
-
-        breakBlocks = value;
-
-    }
-
-
-
-    public boolean canOpenChests() {
-
-        return openChests;
-
-    }
-
-
-    public void setOpenChests(boolean value) {
-
-        openChests = value;
-
-    }
-
-
-
-    public boolean canOpenBarrels() {
-
-        return openBarrels;
-
-    }
-
-
-    public void setOpenBarrels(boolean value) {
-
-        openBarrels = value;
-
-    }
-
-
-
-    public boolean canOpenShulkers() {
-
-        return openShulkers;
-
-    }
-
-
-    public void setOpenShulkers(boolean value) {
-
-        openShulkers = value;
-
-    }
-
-
-
-    public boolean canUseFurnaces() {
-
-        return useFurnaces;
-
-    }
-
-
-    public void setUseFurnaces(boolean value) {
-
-        useFurnaces = value;
-
-    }
-
-
-
-    public boolean canUseAnvils() {
-
-        return useAnvils;
-
-    }
-
-
-    public void setUseAnvils(boolean value) {
-
-        useAnvils = value;
-
-    }
-
-
-
-    public boolean canUseCrafting() {
-
-        return useCrafting;
-
-    }
-
-
-    public void setUseCrafting(boolean value) {
-
-        useCrafting = value;
-
-    }
-
-
-
-    public boolean canUseEnchanting() {
-
-        return useEnchanting;
-
-    }
-
-
-    public void setUseEnchanting(boolean value) {
-
-        useEnchanting = value;
-
     }
 
 
 
     // ==========================
-    // BLOCS INTERDITS
+    // Blocs
+    // ==========================
+
+
+    public boolean canPlaceBlocks() {
+        return placeBlocks;
+    }
+
+
+    public void setPlaceBlocks(boolean value) {
+        placeBlocks = value;
+    }
+
+
+
+    public boolean canBreakBlocks() {
+        return breakBlocks;
+    }
+
+
+    public void setBreakBlocks(boolean value) {
+        breakBlocks = value;
+    }
+
+
+
+    // ==========================
+    // Coffres
+    // ==========================
+
+
+    public boolean canOpenChests() {
+        return openChests;
+    }
+
+
+    public void setOpenChests(boolean value) {
+        openChests = value;
+    }
+
+
+
+    public boolean canOpenBarrels() {
+        return openBarrels;
+    }
+
+
+    public void setOpenBarrels(boolean value) {
+        openBarrels = value;
+    }
+
+
+
+    public boolean canOpenShulkers() {
+        return openShulkers;
+    }
+
+
+    public void setOpenShulkers(boolean value) {
+        openShulkers = value;
+    }
+
+
+
+    // ==========================
+    // Utilitaires
+    // ==========================
+
+
+    public boolean canUseFurnaces() {
+        return useFurnaces;
+    }
+
+
+    public void setUseFurnaces(boolean value) {
+        useFurnaces = value;
+    }
+
+
+
+    public boolean canUseAnvils() {
+        return useAnvils;
+    }
+
+
+    public void setUseAnvils(boolean value) {
+        useAnvils = value;
+    }
+
+
+
+    public boolean canUseCrafting() {
+        return useCrafting;
+    }
+
+
+    public void setUseCrafting(boolean value) {
+        useCrafting = value;
+    }
+
+
+
+    public boolean canUseEnchanting() {
+        return useEnchanting;
+    }
+
+
+    public void setUseEnchanting(boolean value) {
+        useEnchanting = value;
+    }
+
+
+
+    // ==========================
+    // Blocs interdits
     // ==========================
 
 
