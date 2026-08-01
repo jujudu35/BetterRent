@@ -11,6 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.block.Action;
 
+
 public class DoorListener implements Listener {
 
 
@@ -26,6 +27,7 @@ public class DoorListener implements Listener {
         this.regionUtil = new RegionUtil(plugin);
 
     }
+
 
 
 
@@ -87,9 +89,9 @@ public class DoorListener implements Listener {
 
 
         // Propriétaire bypass
-        if (house.getOwner() != null &&
-                house.getOwner()
-                        .equals(player.getUniqueId())) {
+        if (house.getOwner() != null
+                && house.getOwner()
+                .equals(player.getUniqueId())) {
 
             return;
 
@@ -97,10 +99,20 @@ public class DoorListener implements Listener {
 
 
 
-        // Joueur trust bypass
-        if (house.isTrusted(
-                player.getUniqueId()
-        )) {
+        /*
+         * Permissions
+         */
+
+
+        // Trappes
+        if (type.contains("TRAPDOOR")) {
+
+
+            if (!house.canOpenTrapdoors()) {
+
+                cancel(event, player);
+
+            }
 
             return;
 
@@ -108,35 +120,36 @@ public class DoorListener implements Listener {
 
 
 
-        // Vérification permissions
+        // Portes normales
+        if (type.contains("DOOR")) {
 
-        if (type.contains("DOOR")
-                && !house.canOpenDoors()) {
 
-            cancel(event, player);
+            if (!house.canOpenDoors()) {
+
+                cancel(event, player);
+
+            }
+
             return;
 
         }
 
 
 
-        if (type.contains("TRAPDOOR")
-                && !house.canOpenTrapdoors()) {
+        // Portails
+        if (type.contains("FENCE_GATE")) {
 
-            cancel(event, player);
+
+            if (!house.canOpenFenceGates()) {
+
+                cancel(event, player);
+
+            }
+
             return;
 
         }
 
-
-
-        if (type.contains("FENCE_GATE")
-                && !house.canOpenFenceGates()) {
-
-            cancel(event, player);
-            return;
-
-        }
 
     }
 
