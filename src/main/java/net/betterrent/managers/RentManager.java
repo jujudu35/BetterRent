@@ -1,120 +1,36 @@
-package net.betterrent.model;
+package net.betterrent.managers;
 
+
+import net.betterrent.BetterRent;
+import net.betterrent.model.RentHouse;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 
 
-public class RentHouse {
+public class RentManager {
 
 
-    private final String name;
+    private final BetterRent plugin;
 
-    private final double pricePerDay;
 
+    private final Map<String, RentHouse> houses;
 
 
-    private UUID owner;
 
-    private long expireTime;
 
 
+    public RentManager(BetterRent plugin) {
 
-    private Location pos1;
 
-    private Location pos2;
+        this.plugin = plugin;
 
+        this.houses = new HashMap<>();
 
-
-    private String worldGuardRegion;
-
-
-
-    // =========================
-    // COLOCATAIRES
-    // =========================
-
-    private final List<UUID> trustedPlayers;
-
-    private static final int MAX_TENANTS = 5;
-
-
-
-
-
-    // =========================
-    // PERMISSIONS
-    // =========================
-
-
-    private boolean openDoors = true;
-
-    private boolean openTrapdoors = true;
-
-    private boolean openFenceGates = true;
-
-
-
-    private boolean placeBlocks = true;
-
-    private boolean breakBlocks = true;
-
-
-
-    private boolean openChests = true;
-
-    private boolean openBarrels = true;
-
-    private boolean openShulkers = false;
-
-
-
-    private boolean useFurnaces = true;
-
-    private boolean useAnvils = true;
-
-    private boolean useCrafting = true;
-
-    private boolean useEnchanting = true;
-
-
-
-
-
-    // =========================
-    // BLOCS INTERDITS
-    // =========================
-
-
-    private final Set<Material> blockedPlaceBlocks;
-
-
-
-
-
-
-    public RentHouse(String name, double pricePerDay) {
-
-
-        this.name = name;
-
-        this.pricePerDay = pricePerDay;
-
-
-        this.trustedPlayers = new ArrayList<>();
-
-
-        this.blockedPlaceBlocks = new HashSet<>();
-
-
-        loadDefaultBlockedBlocks();
 
     }
 
@@ -123,33 +39,506 @@ public class RentHouse {
 
 
 
-    private void loadDefaultBlockedBlocks() {
+
+
+    // =================================
+    // TYPES DE MAISONS
+    // =================================
 
 
 
-        blockedPlaceBlocks.add(Material.HOPPER);
-
-        blockedPlaceBlocks.add(Material.BARREL);
-
-        blockedPlaceBlocks.add(Material.CHEST);
-
-        blockedPlaceBlocks.add(Material.TRAPPED_CHEST);
-
-        blockedPlaceBlocks.add(Material.DISPENSER);
-
-        blockedPlaceBlocks.add(Material.DROPPER);
+    public enum HouseType {
 
 
-
-        // Toutes les shulkers
-
-        for(Material material : Material.values()) {
-
-
-            if(material.name().contains("SHULKER_BOX")) {
+        MAISON_PAUVRE(
+                "Maison pauvre",
+                10000
+        ),
 
 
-                blockedPlaceBlocks.add(material);
+        GRANDE_MAISON_PAUVRE(
+                "Grande maison pauvre",
+                50000
+        ),
+
+
+        MAISON_MODERNE(
+                "Maison moderne",
+                100000
+        ),
+
+
+        GRANDE_MAISON_MODERNE(
+                "Grande maison moderne",
+                500000
+        ),
+
+
+        MAISON_RICHE(
+                "Maison riche",
+                1000000
+        ),
+
+
+        GRANDE_MAISON_RICHE(
+                "Grande maison riche",
+                2500000
+        );
+
+
+
+        private final String displayName;
+
+
+        private final double price;
+
+
+
+
+
+        HouseType(String displayName, double price) {
+
+
+            this.displayName = displayName;
+
+            this.price = price;
+
+
+        }
+
+
+
+
+
+        public String getDisplayName() {
+
+
+            return displayName;
+
+
+        }
+
+
+
+
+
+        public double getPrice() {
+
+
+            return price;
+
+
+        }
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    // =================================
+    // CREATION MAISON
+    // =================================
+
+
+
+    public String createHouse(HouseType type) {
+
+
+
+        int number = 1;
+
+
+        String id;
+
+
+
+        do {
+
+
+            id = type.name().toLowerCase()
+                    + "_"
+                    + number;
+
+
+            number++;
+
+
+        } while(houses.containsKey(id));
+
+
+
+
+
+        RentHouse house =
+                new RentHouse(
+                        type.getDisplayName(),
+                        type.getPrice()
+                );
+
+
+
+
+        houses.put(
+                id,
+                house
+        );
+
+
+
+        return id;
+
+
+    }
+
+
+
+
+
+
+
+
+
+    // =================================
+    // SUPPRESSION
+    // =================================
+
+
+
+    public boolean deleteHouse(String id) {
+
+
+        return houses.remove(id) != null;
+
+
+    }
+
+
+
+
+
+
+
+
+
+    // =================================
+    // RECUPERATION
+    // =================================
+
+
+
+    public RentHouse getHouse(String id) {
+
+
+        return houses.get(id);
+
+
+    }
+
+
+
+
+
+    public Map<String, RentHouse> getHouses() {
+
+
+        return houses;
+
+
+    }
+
+
+
+
+
+
+
+
+
+    // =================================
+    // TROUVER MAISON POSITION
+    // =================================
+
+
+
+    public RentHouse getHouseAt(Location location) {
+
+
+
+        for(RentHouse house : houses.values()) {
+
+
+
+            if(house.isInside(location)) {
+
+
+                return house;
+
+
+            }
+
+
+        }
+
+
+
+        return null;
+
+
+    }
+
+
+
+
+
+
+
+
+
+    // =================================
+    // LOCATION
+    // =================================
+
+
+
+    public boolean rentHouse(
+            String id,
+            UUID player,
+            int days
+    ) {
+
+
+
+        RentHouse house =
+                getHouse(id);
+
+
+
+        if(house == null) {
+
+
+            return false;
+
+
+        }
+
+
+
+
+
+        if(!house.isAvailable()) {
+
+
+            return false;
+
+
+        }
+
+
+
+
+
+        house.setOwner(player);
+
+
+
+
+        long duration =
+                days
+                * 24L
+                * 60L
+                * 60L
+                * 1000L;
+
+
+
+
+        house.setExpireTime(
+                System.currentTimeMillis()
+                + duration
+        );
+
+
+
+        return true;
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+    // =================================
+    // RENOUVELER
+    // =================================
+
+
+
+    public boolean extendRent(
+            String id,
+            int days
+    ) {
+
+
+
+        RentHouse house =
+                getHouse(id);
+
+
+
+        if(house == null) {
+
+
+            return false;
+
+
+        }
+
+
+
+
+
+        long duration =
+                days
+                * 24L
+                * 60L
+                * 60L
+                * 1000L;
+
+
+
+
+
+        house.setExpireTime(
+                house.getExpireTime()
+                + duration
+        );
+
+
+
+        return true;
+
+
+    }
+
+
+
+
+
+
+
+
+
+    // =================================
+    // COLOCATAIRES
+    // =================================
+
+
+
+    public boolean addTenant(
+            String id,
+            UUID uuid
+    ) {
+
+
+
+        RentHouse house =
+                getHouse(id);
+
+
+
+        if(house == null) {
+
+
+            return false;
+
+
+        }
+
+
+
+
+
+        return house.addTenant(uuid);
+
+
+    }
+
+
+
+
+
+
+
+
+    public boolean removeTenant(
+            String id,
+            UUID uuid
+    ) {
+
+
+        RentHouse house =
+                getHouse(id);
+
+
+
+        if(house == null) {
+
+
+            return false;
+
+
+        }
+
+
+
+
+        house.removeTenant(uuid);
+
+
+        return true;
+
+
+    }
+
+
+
+
+
+
+
+
+
+    // =================================
+    // SAUVEGARDE
+    // =================================
+
+
+
+    public void clearExpired() {
+
+
+
+        for(RentHouse house : houses.values()) {
+
+
+
+            if(house.isExpired()) {
+
+
+                house.clearRent();
 
 
             }
@@ -160,425 +549,6 @@ public class RentHouse {
 
     }
 
-
-
-
-
-
-
-
-
-    // =========================
-    // LOCATION
-    // =========================
-
-
-    public boolean isInside(Location location) {
-
-
-        if(pos1 == null || pos2 == null) {
-
-            return false;
-
-        }
-
-
-
-        if(!location.getWorld()
-                .equals(pos1.getWorld())) {
-
-            return false;
-
-        }
-
-
-
-        double minX = Math.min(pos1.getX(), pos2.getX());
-
-        double maxX = Math.max(pos1.getX(), pos2.getX());
-
-
-
-        double minY = Math.min(pos1.getY(), pos2.getY());
-
-        double maxY = Math.max(pos1.getY(), pos2.getY());
-
-
-
-        double minZ = Math.min(pos1.getZ(), pos2.getZ());
-
-        double maxZ = Math.max(pos1.getZ(), pos2.getZ());
-
-
-
-
-        return location.getX() >= minX
-                && location.getX() <= maxX
-
-                && location.getY() >= minY
-                && location.getY() <= maxY
-
-                && location.getZ() >= minZ
-                && location.getZ() <= maxZ;
-
-    }
-
-
-
-
-
-
-    public Location getPos1() {
-
-        return pos1;
-
-    }
-
-
-    public void setPos1(Location pos1) {
-
-        this.pos1 = pos1;
-
-    }
-
-
-
-    public Location getPos2() {
-
-        return pos2;
-
-    }
-
-
-    public void setPos2(Location pos2) {
-
-        this.pos2 = pos2;
-
-    }
-
-
-
-
-
-
-
-
-    // =========================
-    // LOCATION RENT
-    // =========================
-
-
-    public boolean isRented() {
-
-
-        return owner != null
-                && expireTime > System.currentTimeMillis();
-
-
-    }
-
-
-
-
-    public boolean isExpired() {
-
-
-        if(owner == null) {
-
-            return false;
-
-        }
-
-
-        return expireTime <= System.currentTimeMillis();
-
-    }
-
-
-
-
-
-
-    public boolean isAvailable() {
-
-
-        return owner == null
-                || isExpired();
-
-
-    }
-
-
-
-
-
-
-
-    public void clearRent() {
-
-
-        owner = null;
-
-        expireTime = 0;
-
-        trustedPlayers.clear();
-
-
-    }
-
-
-
-
-
-
-    public UUID getOwner() {
-
-        return owner;
-
-    }
-
-
-
-    public void setOwner(UUID owner) {
-
-        this.owner = owner;
-
-    }
-
-
-
-
-
-    public long getExpireTime() {
-
-        return expireTime;
-
-    }
-
-
-
-    public void setExpireTime(long expireTime) {
-
-        this.expireTime = expireTime;
-
-    }
-
-
-
-
-
-
-
-
-    // =========================
-    // TRUST
-    // =========================
-
-
-    public boolean addTrusted(UUID uuid) {
-
-
-
-        if(trustedPlayers.size() >= MAX_TENANTS) {
-
-            return false;
-
-        }
-
-
-
-
-        if(!trustedPlayers.contains(uuid)) {
-
-
-            trustedPlayers.add(uuid);
-
-
-            return true;
-
-        }
-
-
-
-        return false;
-
-
-    }
-
-
-
-
-
-
-    public void removeTrusted(UUID uuid) {
-
-
-        trustedPlayers.remove(uuid);
-
-
-    }
-
-
-
-
-
-
-    public boolean isTrusted(UUID uuid) {
-
-
-        return trustedPlayers.contains(uuid);
-
-
-    }
-
-
-
-
-
-
-    public void clearTrusted() {
-
-
-        trustedPlayers.clear();
-
-
-    }
-
-
-
-
-
-    public List<UUID> getTrustedPlayers() {
-
-
-        return trustedPlayers;
-
-
-    }
-
-
-
-
-
-    public int getMaxTenants() {
-
-
-        return MAX_TENANTS;
-
-
-    }
-
-
-
-
-
-
-
-
-
-    // =========================
-    // BLOCS INTERDITS
-    // =========================
-
-
-    public Set<Material> getBlockedPlaceBlocks() {
-
-
-        return blockedPlaceBlocks;
-
-
-    }
-
-
-
-
-
-    public boolean isBlockedPlace(Material material) {
-
-
-        return blockedPlaceBlocks.contains(material);
-
-
-    }
-
-
-
-
-
-    public void addBlockedPlace(Material material) {
-
-
-        blockedPlaceBlocks.add(material);
-
-
-    }
-
-
-
-
-
-    public void removeBlockedPlace(Material material) {
-
-
-        blockedPlaceBlocks.remove(material);
-
-
-    }
-
-
-
-
-
-
-
-
-
-    // =========================
-    // INFO
-    // =========================
-
-
-    public String getName() {
-
-
-        return name;
-
-
-    }
-
-
-
-
-    public double getPricePerDay() {
-
-
-        return pricePerDay;
-
-
-    }
-
-
-
-
-
-    public String getWorldGuardRegion() {
-
-
-        return worldGuardRegion;
-
-
-    }
-
-
-
-
-    public void setWorldGuardRegion(String region) {
-
-
-        this.worldGuardRegion = region;
-
-
-    }
 
 
 
