@@ -29,8 +29,8 @@ public class RentManager {
 
         this.houses = new HashMap<>();
 
-
     }
+
 
 
 
@@ -96,28 +96,22 @@ public class RentManager {
 
             this.price = price;
 
-
         }
 
 
 
         public String getDisplayName() {
 
-
             return displayName;
 
-
         }
-
 
 
 
         public double getPrice() {
 
-
             return price;
 
-
         }
 
 
@@ -129,203 +123,10 @@ public class RentManager {
 
 
 
-    // =================================
-// CREATION MAISON
-// =================================
-
-public String createHouse(HouseType type) {
-
-
-    int number = 1;
-
-    String id;
-
-
-    do {
-
-        id =
-                type.name().toLowerCase()
-                + "_"
-                + number;
-
-
-        number++;
-
-
-    } while(houses.containsKey(id));
-
-
-
-
-    RentHouse house =
-            new RentHouse(
-                    type.getDisplayName(),
-                    type.getPrice()
-            );
-
-
-
-    houses.put(
-            id,
-            house
-    );
-
-
-
-    return id;
-
-}
-
-
-
-
 
 
     // =================================
-    // SUPPRESSION
-    // =================================
-
-
-    public boolean deleteHouse(String id) {
-
-
-        return houses.remove(id) != null;
-
-
-    }
-
-
-
-
-
-
-    // =================================
-    // RECUPERATION
-    // =================================
-
-
-    public RentHouse getHouse(String id) {
-
-
-        return houses.get(id);
-
-
-    }
-
-
-
-
-    public Map<String, RentHouse> getHouses() {
-
-
-        return houses;
-
-
-    }
-
-
-
-
-
-
-    // =================================
-    // TROUVER MAISON POSITION
-    // =================================
-
-
-    public RentHouse getHouseAt(Location location) {
-
-
-
-        for(RentHouse house : houses.values()) {
-
-
-
-            if(house.isInside(location)) {
-
-
-                return house;
-
-
-            }
-
-
-        }
-
-
-
-        return null;
-
-
-    }
-
-
-
-
-
-
-   // =================================
-// LOCATION
-// =================================
-
-public boolean rentHouse(
-        String id,
-        UUID player,
-        int days
-) {
-
-
-    RentHouse house =
-            getHouse(id);
-
-
-    if(house == null) {
-
-        return false;
-
-    }
-
-
-
-    if(!house.isAvailable()) {
-
-        return false;
-
-    }
-
-
-
-    house.setOwner(player);
-
-
-
-    long duration =
-            days
-            * 24L
-            * 60L
-            * 60L
-            * 1000L;
-
-
-
-    house.setExpireTime(
-            System.currentTimeMillis()
-            + duration
-    );
-
-
-    return true;
-
-}
-
-
-
-
-
-
-
-    // =================================
-    // CREATION MAISON
+    // CREER UNE MAISON
     // =================================
 
 
@@ -334,13 +135,16 @@ public boolean rentHouse(
 
         int number = 1;
 
+
         String id;
 
 
 
         do {
 
-            id = type.name().toLowerCase()
+
+            id =
+                    type.name().toLowerCase()
                     + "_"
                     + number;
 
@@ -348,7 +152,8 @@ public boolean rentHouse(
             number++;
 
 
-        } while (houses.containsKey(id));
+        } while(houses.containsKey(id));
+
 
 
 
@@ -359,6 +164,7 @@ public boolean rentHouse(
                         type.getDisplayName(),
                         type.getPrice()
                 );
+
 
 
 
@@ -381,8 +187,10 @@ public boolean rentHouse(
 
 
 
+
+
     // =================================
-    // SUPPRESSION MAISON
+    // SUPPRIMER UNE MAISON
     // =================================
 
 
@@ -400,8 +208,10 @@ public boolean rentHouse(
 
 
 
+
+
     // =================================
-    // RECUPERATION
+    // RECUPERER UNE MAISON
     // =================================
 
 
@@ -412,6 +222,8 @@ public boolean rentHouse(
 
 
     }
+
+
 
 
 
@@ -429,13 +241,14 @@ public boolean rentHouse(
 
 
 
+
+
     // =================================
-    // TROUVER MAISON POSITION
+    // TROUVER UNE MAISON PAR POSITION
     // =================================
 
 
     public RentHouse getHouseAt(Location location) {
-
 
 
         for(RentHouse house : houses.values()) {
@@ -463,13 +276,9 @@ public boolean rentHouse(
 
 
 
-
-
-
-    // =================================
+  // =================================
     // LOUER UNE MAISON
     // =================================
-
 
     public boolean rentHouse(
             String id,
@@ -477,36 +286,17 @@ public boolean rentHouse(
             int days
     ) {
 
+        RentHouse house = getHouse(id);
 
-
-        RentHouse house =
-                getHouse(id);
-
-
-
-        if(house == null) {
-
+        if (house == null) {
             return false;
-
         }
 
-
-
-
-
-        if(!house.isAvailable()) {
-
+        if (!house.isAvailable()) {
             return false;
-
         }
-
-
-
-
 
         house.setOwner(player);
-
-
 
         long duration =
                 days
@@ -514,20 +304,13 @@ public boolean rentHouse(
                 * 60L
                 * 60L
                 * 1000L;
-
-
-
-
 
         house.setExpireTime(
                 System.currentTimeMillis()
                 + duration
         );
 
-
-
         return true;
-
 
     }
 
@@ -535,34 +318,24 @@ public boolean rentHouse(
 
 
 
-
-
     // =================================
-    // PROLONGER LOCATION
+    // PROLONGER UNE LOCATION
     // =================================
-
 
     public boolean extendRent(
             String id,
             int days
     ) {
 
+        RentHouse house = getHouse(id);
 
-
-        RentHouse house =
-                getHouse(id);
-
-
-
-        if(house == null) {
-
+        if (house == null) {
             return false;
-
         }
 
-
-
-
+        if (!house.isRented()) {
+            return false;
+        }
 
         long duration =
                 days
@@ -571,18 +344,136 @@ public boolean rentHouse(
                 * 60L
                 * 1000L;
 
-
-
-
-
         house.setExpireTime(
                 house.getExpireTime()
                 + duration
         );
 
+        return true;
 
+    }
+
+
+
+
+
+    // =================================
+    // AJOUTER UN COLOCATAIRE
+    // =================================
+
+    public boolean addTenant(
+            String id,
+            UUID uuid
+    ) {
+
+        RentHouse house = getHouse(id);
+
+        if (house == null) {
+            return false;
+        }
+
+        return house.addTenant(uuid);
+
+    }
+
+
+
+
+
+    // =================================
+    // RETIRER UN COLOCATAIRE
+    // =================================
+
+    public boolean removeTenant(
+            String id,
+            UUID uuid
+    ) {
+
+        RentHouse house = getHouse(id);
+
+        if (house == null) {
+            return false;
+        }
+
+        house.removeTenant(uuid);
 
         return true;
 
+    }
+
+
+
+
+
+    // =================================
+    // LIBERER LES MAISONS EXPIREES
+    // =================================
+
+    public void clearExpired() {
+
+        for (RentHouse house : houses.values()) {
+
+            if (house.isExpired()) {
+
+                house.clearRent();
+
+            }
+
+        }
 
     }
+
+
+
+
+
+    // =================================
+    // LIBERER UNE MAISON
+    // =================================
+
+    public boolean releaseHouse(String id) {
+
+        RentHouse house = getHouse(id);
+
+        if (house == null) {
+            return false;
+        }
+
+        house.clearRent();
+
+        return true;
+
+    }
+
+
+
+
+
+    // =================================
+    // NOMBRE DE MAISONS
+    // =================================
+
+    public int getHouseCount() {
+
+        return houses.size();
+
+    }
+
+
+
+
+
+    // =================================
+    // RELOAD
+    // =================================
+
+    public void reload() {
+
+        plugin.getLogger().info(
+                houses.size()
+                + " maisons chargées."
+        );
+
+    }
+
+}
