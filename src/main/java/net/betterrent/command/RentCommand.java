@@ -1,6 +1,9 @@
 package net.betterrent.command;
 
+
 import net.betterrent.BetterRent;
+import net.betterrent.worldedit.SelectionManager;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -8,45 +11,46 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 
+
 public class RentCommand implements CommandExecutor {
 
 
     private final BetterRent plugin;
+
+    private final SelectionManager selectionManager;
+
 
 
     public RentCommand(BetterRent plugin) {
 
         this.plugin = plugin;
 
+        this.selectionManager =
+                new SelectionManager(plugin);
+
     }
 
 
+
+
+
+
+
     @Override
-    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+    public boolean onCommand(
+            CommandSender sender,
+            Command command,
+            String label,
+            String[] args
+    ) {
 
 
-        if (!(sender instanceof Player player)) {
 
-            sender.sendMessage("Cette commande est réservée aux joueurs.");
-            return true;
+        if(!(sender instanceof Player player)) {
 
-        }
-
-
-        if (!player.hasPermission("betterrent.admin")) {
-
-            player.sendMessage(ChatColor.RED + "Vous n'avez pas la permission.");
-            return true;
-
-        }
-
-
-        if (args.length == 0) {
-
-            player.sendMessage(ChatColor.GOLD + "BetterRent");
-            player.sendMessage(ChatColor.YELLOW + "/rent create <nom> <prix>");
-            player.sendMessage(ChatColor.YELLOW + "/rent delete <nom>");
-            player.sendMessage(ChatColor.YELLOW + "/rent info <nom>");
+            sender.sendMessage(
+                    "Commande réservée aux joueurs."
+            );
 
             return true;
 
@@ -54,68 +58,15 @@ public class RentCommand implements CommandExecutor {
 
 
 
-        if (args[0].equalsIgnoreCase("create")) {
-
-
-            if (args.length < 3) {
-
-                player.sendMessage(
-                        ChatColor.RED +
-                        "Utilisation : /rent create <nom> <prix>"
-                );
-
-                return true;
-
-            }
-
-
-            String name = args[1];
-
-
-            double price;
-
-            try {
-
-                price = Double.parseDouble(args[2]);
-
-            } catch (NumberFormatException e) {
-
-                player.sendMessage(
-                        ChatColor.RED +
-                        "Le prix doit être un nombre."
-                );
-
-                return true;
-
-            }
 
 
 
-            boolean created =
-                    plugin.getRentManager()
-                            .createHouse(name, price);
-
-
-
-            if (!created) {
-
-                player.sendMessage(
-                        ChatColor.RED +
-                        "Cette maison existe déjà."
-                );
-
-                return true;
-
-            }
-
+        if(!player.hasPermission("betterrent.admin")) {
 
 
             player.sendMessage(
-                    ChatColor.GREEN +
-                    "Maison " + name +
-                    " créée pour " +
-                    price +
-                    "$/jour."
+                    ChatColor.RED +
+                    "Vous n'avez pas la permission."
             );
 
 
@@ -125,23 +76,152 @@ public class RentCommand implements CommandExecutor {
 
 
 
-        if (args[0].equalsIgnoreCase("delete")) {
 
 
-            if (args.length < 2) {
+
+
+        if(args.length == 0) {
+
+
+            player.sendMessage(
+                    ChatColor.GOLD +
+                    "===== BetterRent ====="
+            );
+
+
+            player.sendMessage(
+                    ChatColor.YELLOW +
+                    "/rent create <type>"
+            );
+
+
+            player.sendMessage(
+                    ChatColor.YELLOW +
+                    "/rent delete <nom>"
+            );
+
+
+            player.sendMessage(
+                    ChatColor.YELLOW +
+                    "/rent info <nom>"
+            );
+
+
+            player.sendMessage(
+                    ChatColor.YELLOW +
+                    "/rent setregion <nom>"
+            );
+
+
+            return true;
+
+        }
+
+
+
+
+
+
+
+
+
+        // ===============================
+        // CREATION
+        // ===============================
+
+
+        if(args[0].equalsIgnoreCase("create")) {
+
+
+            if(args.length < 2) {
+
 
                 player.sendMessage(
                         ChatColor.RED +
-                        "Utilisation : /rent delete <nom>"
+                        "/rent create <type>"
                 );
+
 
                 return true;
 
             }
 
 
-            if (plugin.getRentManager()
+
+            try {
+
+
+                RentManager.HouseType type =
+                        RentManager.HouseType.valueOf(
+                                args[1].toUpperCase()
+                        );
+
+
+
+                String id =
+                        plugin.getRentManager()
+                                .createHouse(type);
+
+
+
+                player.sendMessage(
+                        ChatColor.GREEN +
+                        "Maison créée : "
+                        + id
+                );
+
+
+
+            } catch(Exception e) {
+
+
+                player.sendMessage(
+                        ChatColor.RED +
+                        "Type inconnu."
+                );
+
+
+            }
+
+
+            return true;
+
+        }
+
+
+
+
+
+
+
+
+
+        // ===============================
+        // SUPPRESSION
+        // ===============================
+
+
+        if(args[0].equalsIgnoreCase("delete")) {
+
+
+            if(args.length < 2) {
+
+                player.sendMessage(
+                        ChatColor.RED +
+                        "/rent delete <nom>"
+                );
+
+
+                return true;
+
+            }
+
+
+
+
+            if(plugin.getRentManager()
                     .deleteHouse(args[1])) {
+
 
 
                 player.sendMessage(
@@ -158,6 +238,7 @@ public class RentCommand implements CommandExecutor {
                         "Maison introuvable."
                 );
 
+
             }
 
 
@@ -167,19 +248,31 @@ public class RentCommand implements CommandExecutor {
 
 
 
-        if (args[0].equalsIgnoreCase("info")) {
 
 
-            if (args.length < 2) {
+
+
+
+
+        // ===============================
+        // INFO
+        // ===============================
+
+
+        if(args[0].equalsIgnoreCase("info")) {
+
+
+            if(args.length < 2) {
 
                 player.sendMessage(
                         ChatColor.RED +
-                        "Utilisation : /rent info <nom>"
+                        "/rent info <nom>"
                 );
 
                 return true;
 
             }
+
 
 
             var house =
@@ -188,12 +281,14 @@ public class RentCommand implements CommandExecutor {
 
 
 
-            if (house == null) {
+            if(house == null) {
+
 
                 player.sendMessage(
                         ChatColor.RED +
                         "Maison introuvable."
                 );
+
 
                 return true;
 
@@ -201,34 +296,137 @@ public class RentCommand implements CommandExecutor {
 
 
 
-            player.sendMessage(ChatColor.GOLD + "------");
-            player.sendMessage(
-                    ChatColor.YELLOW +
-                    "Nom : " +
-                    house.getName()
-            );
 
             player.sendMessage(
-                    ChatColor.YELLOW +
-                    "Prix : " +
-                    house.getPricePerDay() +
-                    "$/jour"
+                    ChatColor.GOLD +
+                    "===== Maison ====="
             );
 
 
             player.sendMessage(
                     ChatColor.YELLOW +
-                    "Louée : " +
-                    house.isRented()
+                    "Nom : "
+                    + house.getName()
             );
 
 
-            player.sendMessage(ChatColor.GOLD + "------");
+            player.sendMessage(
+                    ChatColor.YELLOW +
+                    "Prix : "
+                    + house.getPricePerDay()
+                    + "$/jour"
+            );
+
+
+            player.sendMessage(
+                    ChatColor.YELLOW +
+                    "Louée : "
+                    + house.isRented()
+            );
 
 
             return true;
 
         }
+
+
+
+
+
+
+
+
+
+        // ===============================
+        // REGION WORLDEDIT
+        // ===============================
+
+
+        if(args[0].equalsIgnoreCase("setregion")) {
+
+
+
+            if(args.length < 2) {
+
+
+                player.sendMessage(
+                        ChatColor.RED +
+                        "/rent setregion <maison>"
+                );
+
+
+                return true;
+
+            }
+
+
+
+
+            var house =
+                    plugin.getRentManager()
+                            .getHouse(args[1]);
+
+
+
+            if(house == null) {
+
+
+                player.sendMessage(
+                        ChatColor.RED +
+                        "Maison introuvable."
+                );
+
+
+                return true;
+
+            }
+
+
+
+
+
+            boolean result =
+                    selectionManager.saveSelection(
+                            player,
+                            house
+                    );
+
+
+
+
+
+            if(!result) {
+
+
+                player.sendMessage(
+                        ChatColor.RED +
+                        "Sélection WorldEdit introuvable."
+                );
+
+
+                return true;
+
+            }
+
+
+
+
+            player.sendMessage(
+                    ChatColor.GREEN +
+                    "Région enregistrée."
+            );
+
+
+
+            return true;
+
+        }
+
+
+
+
+
+
 
 
 
@@ -239,5 +437,7 @@ public class RentCommand implements CommandExecutor {
 
 
         return true;
+
     }
+
 }
