@@ -1,92 +1,74 @@
-package net.betterrent.model;
+package net.betterrent.storage;
 
+import net.betterrent.BetterRent;
+import net.betterrent.model.RentHouse;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 
-import java.util.*;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 
-public class RentHouse {
+import java.io.File;
+import java.io.IOException;
 
-
-    private final String name;
-
-    private final double pricePerDay;
-
-
-    private UUID owner;
-
-    private long expireTime;
+import java.util.Map;
+import java.util.UUID;
 
 
-    private Location pos1;
+public class HouseStorage {
 
-    private Location pos2;
 
-    private String worldGuardRegion;
+    private final BetterRent plugin;
+
+    private File file;
+
+    private FileConfiguration config;
 
 
 
-    private final List<UUID> tenants;
+    public HouseStorage(BetterRent plugin) {
 
-    private static final int MAX_TENANTS = 5;
+        this.plugin = plugin;
 
+        load();
 
-
-    private final Map<UUID, RentPermission> permissions;
-
-
-
-    private final Set<Material> blockedPlaceBlocks;
-
-
-
-    // Permissions maison
-
-    private boolean openDoors = true;
-
-    private boolean openTrapdoors = true;
-
-    private boolean openFenceGates = true;
-
-    private boolean placeBlocks = true;
-
-    private boolean breakBlocks = true;
-
-    private boolean openChests = true;
-
-    private boolean openBarrels = true;
-
-    private boolean openShulkers = true;
-
-    private boolean useFurnaces = true;
-
-    private boolean useAnvils = true;
-
-    private boolean useCrafting = true;
-
-    private boolean useEnchanting = true;
+    }
 
 
 
 
-    public RentHouse(
-            String name,
-            double pricePerDay
-    ) {
-
-        this.name = name;
-
-        this.pricePerDay = pricePerDay;
+    private void load() {
 
 
-        this.tenants = new ArrayList<>();
+        file = new File(
+                plugin.getDataFolder(),
+                "houses.yml"
+        );
 
-        this.permissions = new HashMap<>();
-
-        this.blockedPlaceBlocks = new HashSet<>();
 
 
-        loadDefaultBlockedBlocks();
+        if(!file.exists()) {
+
+
+            try {
+
+                file.createNewFile();
+
+            } catch(IOException e) {
+
+                e.printStackTrace();
+
+            }
+
+        }
+
+
+
+        config =
+                YamlConfiguration
+                        .loadConfiguration(file);
+
 
     }
 
@@ -94,725 +76,780 @@ public class RentHouse {
 
 
 
-    private void loadDefaultBlockedBlocks() {
+
+    // =================================
+    // SAUVEGARDE
+    // =================================
 
 
-        blockedPlaceBlocks.add(Material.CHEST);
+    public void save() {
 
-        blockedPlaceBlocks.add(Material.TRAPPED_CHEST);
 
-        blockedPlaceBlocks.add(Material.BARREL);
-
-        blockedPlaceBlocks.add(Material.HOPPER);
-
-        blockedPlaceBlocks.add(Material.DISPENSER);
-
-        blockedPlaceBlocks.add(Material.DROPPER);
+        config.set(
+                "houses",
+                null
+        );
 
 
 
-        for(Material material : Material.values()) {
+        for(Map.Entry<String, RentHouse> entry :
+                plugin.getRentManager()
+                        .getHouses()
+                        .entrySet()) {
 
 
-            if(material.name().endsWith("SHULKER_BOX")) {
+
+            String id =
+                    entry.getKey();
 
 
-                blockedPlaceBlocks.add(material);
+
+            RentHouse house =
+                    entry.getValue();
+
+
+
+            String path =
+                    "houses."
+                    + id;
+
+
+
+
+
+            config.set(
+                    path + ".name",
+                    house.getName()
+            );
+
+
+
+            config.set(
+                    path + ".price",
+                    house.getPricePerDay()
+            );
+
+
+
+
+
+            if(house.getOwner() != null) {
+
+
+                config.set(
+                        path + ".owner",
+                        house.getOwner()
+                                .toString()
+                );
 
 
             }
 
 
-        }
 
 
-    }
 
 
-
-
-
-
-    public String getName() {
-
-        return name;
-
-    }
-
-
-
-
-    public double getPricePerDay() {
-
-        return pricePerDay;
-
-    }
-
-
-
-
-
-
-    // ==========================
-    // PROPRIETAIRE
-    // ==========================
-
-
-    public UUID getOwner() {
-
-        return owner;
-
-    }
-
-
-
-    public void setOwner(UUID owner) {
-
-        this.owner = owner;
-
-    }
-
-
-
-
-
-
-    // ==========================
-    // LOCATION
-    // ==========================
-
-
-    public long getExpireTime() {
-
-        return expireTime;
-
-    }
-
-
-
-    public void setExpireTime(long expireTime) {
-
-        this.expireTime = expireTime;
-
-    }
-
-
-
-
-    public boolean isRented() {
-
-        return owner != null;
-
-    }
-
-
-
-    public boolean isExpired() {
-
-
-        return owner != null
-                && expireTime <= System.currentTimeMillis();
-
-
-    }
-
-
-
-    public boolean isAvailable() {
-
-        return owner == null || isExpired();
-
-    }
-
-
-
-    public long getRemainingTime() {
-
-
-        return Math.max(
-                expireTime - System.currentTimeMillis(),
-                0
-        );
-
-
-    }
-
-
-
-    public void clearRent() {
-
-
-        owner = null;
-
-        expireTime = 0;
-
-
-        tenants.clear();
-
-        permissions.clear();
-
-
-    }
-
-
-
-
-
-
-    // ==========================
-    // REGION
-    // ==========================
-
-
-    public Location getPos1() {
-
-        return pos1;
-
-    }
-
-
-
-    public void setPos1(Location pos1) {
-
-        this.pos1 = pos1;
-
-    }
-
-
-
-    public Location getPos2() {
-
-        return pos2;
-
-    }
-
-
-
-    public void setPos2(Location pos2) {
-
-        this.pos2 = pos2;
-
-    }
-
-
-
-
-    public String getWorldGuardRegion() {
-
-        return worldGuardRegion;
-
-    }
-
-
-
-    public void setWorldGuardRegion(String region) {
-
-        this.worldGuardRegion = region;
-
-    }
-
-
-
-
-
-
-    public boolean isInside(Location location) {
-
-
-        if(pos1 == null || pos2 == null || location == null) {
-
-            return false;
-
-        }
-
-
-
-        if(!pos1.getWorld().equals(location.getWorld())) {
-
-            return false;
-
-        }
-
-
-
-        return location.getBlockX() >= Math.min(pos1.getBlockX(), pos2.getBlockX())
-                && location.getBlockX() <= Math.max(pos1.getBlockX(), pos2.getBlockX())
-
-                && location.getBlockY() >= Math.min(pos1.getBlockY(), pos2.getBlockY())
-                && location.getBlockY() <= Math.max(pos1.getBlockY(), pos2.getBlockY())
-
-                && location.getBlockZ() >= Math.min(pos1.getBlockZ(), pos2.getBlockZ())
-                && location.getBlockZ() <= Math.max(pos1.getBlockZ(), pos2.getBlockZ());
-
- // ==========================
-    // COLOCATAIRES
-    // ==========================
-
-
-    public boolean addTenant(UUID uuid) {
-
-
-        if(uuid == null) {
-
-            return false;
-
-        }
-
-
-        if(tenants.size() >= MAX_TENANTS) {
-
-            return false;
-
-        }
-
-
-
-        if(tenants.contains(uuid)) {
-
-            return false;
-
-        }
-
-
-
-        tenants.add(uuid);
-
-
-        permissions.put(
-                uuid,
-                new RentPermission()
-        );
-
-
-        return true;
-
-    }
-
-
-
-
-
-    public void removeTenant(UUID uuid) {
-
-
-        tenants.remove(uuid);
-
-        permissions.remove(uuid);
-
-
-    }
-
-
-
-
-
-    public boolean isTenant(UUID uuid) {
-
-
-        return tenants.contains(uuid);
-
-
-    }
-
-
-
-
-
-    public List<UUID> getTenants() {
-
-
-        return tenants;
-
-
-    }
-
-
-
-
-
-    public RentPermission getPermission(UUID uuid) {
-
-
-        if(!permissions.containsKey(uuid)) {
-
-
-            permissions.put(
-                    uuid,
-                    new RentPermission()
+            config.set(
+                    path + ".expire",
+                    house.getExpireTime()
             );
 
 
-        }
 
 
-        return permissions.get(uuid);
 
 
-    }
+            saveLocation(
+                    house.getPos1(),
+                    path + ".pos1"
+            );
 
 
+            saveLocation(
+                    house.getPos2(),
+                    path + ".pos2"
+            );
 
 
 
 
 
-    // ==========================
-    // BLOCS INTERDITS
-    // ==========================
 
+            config.set(
+                    path + ".region",
+                    house.getWorldGuardRegion()
+            );
 
-    public boolean isBlockedPlace(Material material) {
 
 
-        return blockedPlaceBlocks.contains(material);
 
 
-    }
 
 
+            // ==========================
+            // SETTINGS MAISON
+            // ==========================
 
-    public Set<Material> getBlockedPlaceBlocks() {
 
+            config.set(
+                    path + ".settings.open-doors",
+                    house.canOpenDoors()
+            );
 
-        return blockedPlaceBlocks;
 
+            config.set(
+                    path + ".settings.open-trapdoors",
+                    house.canOpenTrapdoors()
+            );
 
-    }
 
+            config.set(
+                    path + ".settings.open-fence-gates",
+                    house.canOpenFenceGates()
+            );
 
 
-    public void addBlockedPlace(Material material) {
+            config.set(
+                    path + ".settings.place-blocks",
+                    house.canPlaceBlocks()
+            );
 
 
-        blockedPlaceBlocks.add(material);
+            config.set(
+                    path + ".settings.break-blocks",
+                    house.canBreakBlocks()
+            );
 
 
-    }
+            config.set(
+                    path + ".settings.open-chests",
+                    house.canOpenChests()
+            );
 
 
+            config.set(
+                    path + ".settings.open-barrels",
+                    house.canOpenBarrels()
+            );
 
-    public void removeBlockedPlace(Material material) {
 
+            config.set(
+                    path + ".settings.open-shulkers",
+                    house.canOpenShulkers()
+            );
 
-        blockedPlaceBlocks.remove(material);
 
+            config.set(
+                    path + ".settings.use-furnaces",
+                    house.canUseFurnaces()
+            );
 
-    }
 
+            config.set(
+                    path + ".settings.use-anvils",
+                    house.canUseAnvils()
+            );
 
 
+            config.set(
+                    path + ".settings.use-crafting",
+                    house.canUseCrafting()
+            );
 
 
+            config.set(
+                    path + ".settings.use-enchanting",
+                    house.canUseEnchanting()
+            );
 
-    // ==========================
-    // SETTINGS MAISON
-    // ==========================
 
 
-    public boolean canOpenDoors() {
 
-        return openDoors;
 
-    }
 
+            // ==========================
+            // COLOCATAIRES
+            // ==========================
 
-    public void setOpenDoors(boolean value) {
 
-        openDoors = value;
+            for(int i = 0;
+                i < house.getTenants().size();
+                i++) {
 
-    }
 
 
+                UUID uuid =
+                        house.getTenants()
+                                .get(i);
 
 
-    public boolean canOpenTrapdoors() {
 
-        return openTrapdoors;
 
-    }
+                config.set(
+                        path + ".tenants." + i,
+                        uuid.toString()
+                );
 
 
-    public void setOpenTrapdoors(boolean value) {
 
-        openTrapdoors = value;
+                RentHouse.RentPermission permission =
+                        house.getPermission(uuid);
 
-    }
 
 
 
+                String permissionPath =
+                        path
+                        + ".permissions."
+                        + uuid;
 
-    public boolean canOpenFenceGates() {
 
-        return openFenceGates;
 
-    }
 
 
-    public void setOpenFenceGates(boolean value) {
+                config.set(
+                        permissionPath + ".doors",
+                        permission.canDoors()
+                );
 
-        openFenceGates = value;
 
-    }
+                config.set(
+                        permissionPath + ".storage",
+                        permission.canStorage()
+                );
 
 
+                config.set(
+                        permissionPath + ".usage",
+                        permission.canUse()
+                );
 
 
+                config.set(
+                        permissionPath + ".place",
+                        permission.canPlace()
+                );
 
-    public boolean canPlaceBlocks() {
 
-        return placeBlocks;
+                config.set(
+                        permissionPath + ".break",
+                        permission.canBreak()
+                );
 
-    }
 
 
-    public void setPlaceBlocks(boolean value) {
+            }
 
-        placeBlocks = value;
 
-    }
-
-
-
-
-
-    public boolean canBreakBlocks() {
-
-        return breakBlocks;
-
-    }
-
-
-    public void setBreakBlocks(boolean value) {
-
-        breakBlocks = value;
-
-    }
-
-
-
-
-
-    public boolean canOpenChests() {
-
-        return openChests;
-
-    }
-
-
-    public void setOpenChests(boolean value) {
-
-        openChests = value;
-
-    }
-
-
-
-
-
-    public boolean canOpenBarrels() {
-
-        return openBarrels;
-
-    }
-
-
-    public void setOpenBarrels(boolean value) {
-
-        openBarrels = value;
-
-    }
-
-
-
-
-
-    public boolean canOpenShulkers() {
-
-        return openShulkers;
-
-    }
-
-
-    public void setOpenShulkers(boolean value) {
-
-        openShulkers = value;
-
-    }
-
-
-
-
-
-    public boolean canUseFurnaces() {
-
-        return useFurnaces;
-
-    }
-
-
-    public void setUseFurnaces(boolean value) {
-
-        useFurnaces = value;
-
-    }
-
-
-
-
-
-    public boolean canUseAnvils() {
-
-        return useAnvils;
-
-    }
-
-
-    public void setUseAnvils(boolean value) {
-
-        useAnvils = value;
-
-    }
-
-
-
-
-
-    public boolean canUseCrafting() {
-
-        return useCrafting;
-
-    }
-
-
-    public void setUseCrafting(boolean value) {
-
-        useCrafting = value;
-
-    }
-
-
-
-
-
-    public boolean canUseEnchanting() {
-
-        return useEnchanting;
-
-    }
-
-
-    public void setUseEnchanting(boolean value) {
-
-        useEnchanting = value;
-
-    }
-
-
-
-
-
-
-    // ==========================
-    // CLASSE PERMISSIONS
-    // ==========================
-
-
-    public static class RentPermission {
-
-
-        private boolean doors = true;
-
-        private boolean storage = true;
-
-        private boolean usage = true;
-
-        private boolean place = true;
-
-        private boolean breakBlocks = true;
-
-
-
-        public boolean canDoors() {
-
-            return doors;
-
-        }
-
-
-
-        public void setDoors(boolean value) {
-
-            doors = value;
 
         }
 
 
 
 
-        public boolean canStorage() {
 
-            return storage;
+        try {
+
+
+            config.save(file);
+
+
+
+        } catch(IOException e) {
+
+
+            e.printStackTrace();
+
 
         }
 
 
 
-        public void setStorage(boolean value) {
-
-            storage = value;
-
-        }
-
+    }
+     // =================================
+    // CHARGEMENT
+    // =================================
 
 
-
-        public boolean canUse() {
-
-            return usage;
-
-        }
+    public void loadHouses() {
 
 
+        if(!config.contains("houses")) {
 
-        public void setUse(boolean value) {
-
-            usage = value;
+            return;
 
         }
 
 
 
+        if(config.getConfigurationSection("houses") == null) {
 
-        public boolean canPlace() {
-
-            return place;
-
-        }
-
-
-
-        public void setPlace(boolean value) {
-
-            place = value;
+            return;
 
         }
 
 
 
 
-        public boolean canBreak() {
 
-            return breakBlocks;
+        for(String id :
+                config.getConfigurationSection("houses")
+                        .getKeys(false)) {
+
+
+
+            String path =
+                    "houses."
+                    + id;
+
+
+
+
+
+            RentHouse house =
+                    new RentHouse(
+
+                            config.getString(
+                                    path + ".name"
+                            ),
+
+                            config.getDouble(
+                                    path + ".price"
+                            )
+
+                    );
+
+
+
+
+
+            // ==========================
+            // PROPRIETAIRE
+            // ==========================
+
+
+            if(config.contains(path + ".owner")) {
+
+
+                try {
+
+                    house.setOwner(
+                            UUID.fromString(
+                                    config.getString(
+                                            path + ".owner"
+                                    )
+                            )
+                    );
+
+
+                } catch(Exception ignored) {
+
+                }
+
+
+            }
+
+
+
+
+
+            house.setExpireTime(
+                    config.getLong(
+                            path + ".expire"
+                    )
+            );
+
+
+
+
+
+            // ==========================
+            // POSITIONS
+            // ==========================
+
+
+            house.setPos1(
+                    loadLocation(
+                            path + ".pos1"
+                    )
+            );
+
+
+            house.setPos2(
+                    loadLocation(
+                            path + ".pos2"
+                    )
+            );
+
+
+
+            house.setWorldGuardRegion(
+                    config.getString(
+                            path + ".region"
+                    )
+            );
+
+
+
+
+
+
+
+            // ==========================
+            // SETTINGS MAISON
+            // ==========================
+
+
+            String settings =
+                    path + ".settings";
+
+
+
+            house.setOpenDoors(
+                    config.getBoolean(
+                            settings + ".open-doors",
+                            true
+                    )
+            );
+
+
+            house.setOpenTrapdoors(
+                    config.getBoolean(
+                            settings + ".open-trapdoors",
+                            true
+                    )
+            );
+
+
+            house.setOpenFenceGates(
+                    config.getBoolean(
+                            settings + ".open-fence-gates",
+                            true
+                    )
+            );
+
+
+            house.setPlaceBlocks(
+                    config.getBoolean(
+                            settings + ".place-blocks",
+                            true
+                    )
+            );
+
+
+            house.setBreakBlocks(
+                    config.getBoolean(
+                            settings + ".break-blocks",
+                            true
+                    )
+            );
+
+
+            house.setOpenChests(
+                    config.getBoolean(
+                            settings + ".open-chests",
+                            true
+                    )
+            );
+
+
+            house.setOpenBarrels(
+                    config.getBoolean(
+                            settings + ".open-barrels",
+                            true
+                    )
+            );
+
+
+            house.setOpenShulkers(
+                    config.getBoolean(
+                            settings + ".open-shulkers",
+                            true
+                    )
+            );
+
+
+            house.setUseFurnaces(
+                    config.getBoolean(
+                            settings + ".use-furnaces",
+                            true
+                    )
+            );
+
+
+            house.setUseAnvils(
+                    config.getBoolean(
+                            settings + ".use-anvils",
+                            true
+                    )
+            );
+
+
+            house.setUseCrafting(
+                    config.getBoolean(
+                            settings + ".use-crafting",
+                            true
+                    )
+            );
+
+
+            house.setUseEnchanting(
+                    config.getBoolean(
+                            settings + ".use-enchanting",
+                            true
+                    )
+            );
+
+
+
+
+
+
+
+            // ==========================
+            // COLOCATAIRES
+            // ==========================
+
+
+            if(config.getConfigurationSection(
+                    path + ".tenants"
+            ) != null) {
+
+
+
+                for(String key :
+                        config.getConfigurationSection(
+                                path + ".tenants"
+                        ).getKeys(false)) {
+
+
+
+                    try {
+
+
+                        UUID uuid =
+                                UUID.fromString(
+                                        config.getString(
+                                                path
+                                                + ".tenants."
+                                                + key
+                                        )
+                                );
+
+
+
+                        house.addTenant(uuid);
+
+
+
+
+                        String permissionPath =
+                                path
+                                + ".permissions."
+                                + uuid;
+
+
+
+
+
+                        if(config.contains(permissionPath)) {
+
+
+
+                            RentHouse.RentPermission permission =
+                                    house.getPermission(uuid);
+
+
+
+
+                            permission.setDoors(
+                                    config.getBoolean(
+                                            permissionPath + ".doors",
+                                            true
+                                    )
+                            );
+
+
+                            permission.setStorage(
+                                    config.getBoolean(
+                                            permissionPath + ".storage",
+                                            true
+                                    )
+                            );
+
+
+                            permission.setUse(
+                                    config.getBoolean(
+                                            permissionPath + ".usage",
+                                            true
+                                    )
+                            );
+
+
+                            permission.setPlace(
+                                    config.getBoolean(
+                                            permissionPath + ".place",
+                                            true
+                                    )
+                            );
+
+
+                            permission.setBreak(
+                                    config.getBoolean(
+                                            permissionPath + ".break",
+                                            true
+                                    )
+                            );
+
+
+                        }
+
+
+
+                    } catch(Exception ignored) {
+
+                    }
+
+
+                }
+
+
+            }
+
+
+
+
+
+
+
+            plugin.getRentManager()
+                    .getHouses()
+                    .put(
+                            id,
+                            house
+                    );
+
+
 
         }
 
 
 
-        public void setBreak(boolean value) {
+    }
 
-            breakBlocks = value;
+
+
+
+
+
+
+
+    // =================================
+    // SAUVEGARDE POSITION
+    // =================================
+
+
+    private void saveLocation(
+            Location location,
+            String path
+    ) {
+
+
+        if(location == null) {
+
+            return;
 
         }
+
+
+
+        config.set(
+                path + ".world",
+                location.getWorld()
+                        .getName()
+        );
+
+
+        config.set(
+                path + ".x",
+                location.getX()
+        );
+
+
+        config.set(
+                path + ".y",
+                location.getY()
+        );
+
+
+        config.set(
+                path + ".z",
+                location.getZ()
+        );
+
+
+    }
+
+
+
+
+
+
+    // =================================
+    // CHARGEMENT POSITION
+    // =================================
+
+
+    private Location loadLocation(
+            String path
+    ) {
+
+
+        if(!config.contains(
+                path + ".world"
+        )) {
+
+            return null;
+
+        }
+
+
+
+        String world =
+                config.getString(
+                        path + ".world"
+                );
+
+
+
+        if(world == null ||
+                Bukkit.getWorld(world) == null) {
+
+            return null;
+
+        }
+
+
+
+
+        return new Location(
+
+                Bukkit.getWorld(world),
+
+                config.getDouble(
+                        path + ".x"
+                ),
+
+                config.getDouble(
+                        path + ".y"
+                ),
+
+                config.getDouble(
+                        path + ".z"
+                )
+
+        );
 
 
     }
