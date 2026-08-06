@@ -1,67 +1,339 @@
-name: BetterRent
-version: '1.0.0'
-main: net.betterrent.BetterRent
-api-version: '1.21'
-authors:
-  - jujudu35
-description: Advanced house rental plugin with Vault, WorldEdit and WorldGuard.
-website: https://github.com/jujudu/BetterRent
-
-depend:
-  - Vault
-  - WorldEdit
-  - WorldGuard
+package net.betterrent;
 
 
-commands:
+import net.betterrent.command.RentCommand;
+import net.betterrent.command.RentSettingCommand;
 
-  rent:
-    description: Main BetterRent command.
-    usage: /rent
-    aliases:
-      - br
-    permission: betterrent.use
+import net.betterrent.listener.RentProtectionListener;
 
+import net.betterrent.listeners.BlockListener;
+import net.betterrent.listeners.DoorListener;
+import net.betterrent.listeners.InventoryListener;
+import net.betterrent.listeners.SignListener;
 
-  rentsetting:
-    description: Change rental house permissions.
-    usage: /rentsetting <maison> <permission> <true/false>
-    permission: betterrent.admin
+import net.betterrent.managers.ConfigManager;
+import net.betterrent.managers.HookManager;
+import net.betterrent.managers.RentManager;
 
+import net.betterrent.storage.HouseStorage;
 
+import net.betterrent.task.RentExpireTask;
 
-permissions:
+import net.betterrent.vault.VaultHook;
 
-  betterrent.use:
-    description: Allows using BetterRent.
-    default: true
-
-
-  betterrent.admin:
-    description: Access to all BetterRent commands.
-    default: op
+import net.betterrent.worldedit.SelectionManager;
 
 
-  betterrent.create:
-    description: Create rental houses.
-    default: op
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.java.JavaPlugin;
 
 
-  betterrent.delete:
-    description: Delete rental houses.
-    default: op
+
+public final class BetterRent extends JavaPlugin {
 
 
-  betterrent.reload:
-    description: Reload BetterRent.
-    default: op
+
+    private static BetterRent instance;
 
 
-  betterrent.trust:
-    description: Trust players in your rental.
-    default: true
+
+    private ConfigManager configManager;
+
+    private HookManager hookManager;
+
+    private RentManager rentManager;
+
+    private HouseStorage houseStorage;
+
+    private SelectionManager selectionManager;
+
+    private VaultHook vaultHook;
 
 
-  betterrent.untrust:
-    description: Remove trusted players.
-    default: true
+
+
+
+
+
+    @Override
+    public void onEnable() {
+
+
+
+        instance = this;
+
+
+
+        saveDefaultConfig();
+
+
+
+
+
+        // ==========================
+        // MANAGERS
+        // ==========================
+
+
+        configManager =
+                new ConfigManager(this);
+
+
+
+        hookManager =
+                new HookManager(this);
+
+
+
+        rentManager =
+                new RentManager(this);
+
+
+
+        houseStorage =
+                new HouseStorage(this);
+
+
+
+        selectionManager =
+                new SelectionManager(this);
+
+
+
+        vaultHook =
+                new VaultHook(this);
+
+
+
+
+
+
+
+        // ==========================
+        // COMMANDES
+        // ==========================
+
+
+        getCommand("rent")
+                .setExecutor(
+                        new RentCommand(this)
+                );
+
+
+
+        getCommand("rentsetting")
+                .setExecutor(
+                        new RentSettingCommand(this)
+                );
+
+
+
+
+
+
+
+        // ==========================
+        // LISTENERS
+        // ==========================
+
+
+        Bukkit.getPluginManager()
+                .registerEvents(
+                        new RentProtectionListener(this),
+                        this
+                );
+
+
+
+        Bukkit.getPluginManager()
+                .registerEvents(
+                        new BlockListener(this),
+                        this
+                );
+
+
+
+        Bukkit.getPluginManager()
+                .registerEvents(
+                        new DoorListener(this),
+                        this
+                );
+
+
+
+        Bukkit.getPluginManager()
+                .registerEvents(
+                        new InventoryListener(this),
+                        this
+                );
+
+
+
+        Bukkit.getPluginManager()
+                .registerEvents(
+                        new SignListener(this),
+                        this
+                );
+
+
+
+
+
+
+
+
+        // ==========================
+        // TACHE EXPIRATION
+        // ==========================
+
+
+        new RentExpireTask(this)
+                .runTaskTimer(
+                        this,
+                        20L,
+                        20L * 60
+                );
+
+
+
+
+
+
+
+        getLogger().info(
+                "BetterRent activé !"
+        );
+
+
+    }
+
+
+
+
+
+
+
+
+
+    @Override
+    public void onDisable() {
+
+
+
+        if(houseStorage != null) {
+
+
+            houseStorage.save();
+
+
+        }
+
+
+
+        getLogger().info(
+                "BetterRent désactivé."
+        );
+
+
+    }
+
+
+
+
+
+
+
+
+
+    public static BetterRent getInstance() {
+
+        return instance;
+
+    }
+
+
+
+
+
+
+
+
+
+    public ConfigManager getConfigManager() {
+
+        return configManager;
+
+    }
+
+
+
+
+
+
+
+
+
+    public HookManager getHookManager() {
+
+        return hookManager;
+
+    }
+
+
+
+
+
+
+
+
+
+    public RentManager getRentManager() {
+
+        return rentManager;
+
+    }
+
+
+
+
+
+
+
+
+
+    public HouseStorage getHouseStorage() {
+
+        return houseStorage;
+
+    }
+
+
+
+
+
+
+
+
+
+    public SelectionManager getSelectionManager() {
+
+        return selectionManager;
+
+    }
+
+
+
+
+
+
+
+
+
+    public VaultHook getVaultHook() {
+
+        return vaultHook;
+
+    }
+
+
+}
