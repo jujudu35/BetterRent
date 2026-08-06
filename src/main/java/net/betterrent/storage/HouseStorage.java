@@ -21,13 +21,9 @@ public class HouseStorage {
 
     private final BetterRent plugin;
 
-
     private File file;
 
-
     private FileConfiguration config;
-
-
 
 
 
@@ -38,8 +34,6 @@ public class HouseStorage {
         load();
 
     }
-
-
 
 
 
@@ -84,9 +78,6 @@ public class HouseStorage {
 
 
 
-
-
-
     // =================================
     // SAUVEGARDE
     // =================================
@@ -116,7 +107,6 @@ public class HouseStorage {
 
             RentHouse house =
                     entry.getValue();
-
 
 
 
@@ -160,12 +150,10 @@ public class HouseStorage {
 
 
 
-
             config.set(
                     path + ".expire",
                     house.getExpireTime()
             );
-
 
 
 
@@ -177,12 +165,10 @@ public class HouseStorage {
             );
 
 
-
             saveLocation(
                     house.getPos2(),
                     path + ".pos2"
             );
-
 
 
 
@@ -197,22 +183,14 @@ public class HouseStorage {
 
 
 
-
-            // ==========================
-            // COLOCATAIRES
-            // ==========================
-
-
             for(int i = 0;
                 i < house.getTenants().size();
                 i++) {
 
 
-
                 UUID uuid =
                         house.getTenants()
                                 .get(i);
-
 
 
 
@@ -223,11 +201,8 @@ public class HouseStorage {
 
 
 
-
-
                 RentHouse.RentPermission permission =
                         house.getPermission(uuid);
-
 
 
 
@@ -246,12 +221,10 @@ public class HouseStorage {
                 );
 
 
-
                 config.set(
                         permissionPath + ".storage",
                         permission.canStorage()
                 );
-
 
 
                 config.set(
@@ -260,12 +233,10 @@ public class HouseStorage {
                 );
 
 
-
                 config.set(
                         permissionPath + ".place",
                         permission.canPlace()
                 );
-
 
 
                 config.set(
@@ -279,8 +250,6 @@ public class HouseStorage {
 
 
         }
-
-
 
 
 
@@ -302,7 +271,7 @@ public class HouseStorage {
 
 
     }
-     // =================================
+    // =================================
     // CHARGEMENT
     // =================================
 
@@ -328,7 +297,6 @@ public class HouseStorage {
 
 
 
-
         for(String id :
                 config.getConfigurationSection("houses")
                         .getKeys(false)) {
@@ -345,10 +313,16 @@ public class HouseStorage {
 
             RentHouse house =
                     new RentHouse(
-                            config.getString(path + ".name"),
-                            config.getDouble(path + ".price")
-                    );
 
+                            config.getString(
+                                    path + ".name"
+                            ),
+
+                            config.getDouble(
+                                    path + ".price"
+                            )
+
+                    );
 
 
 
@@ -390,13 +364,11 @@ public class HouseStorage {
 
 
 
-
             house.setExpireTime(
                     config.getLong(
                             path + ".expire"
                     )
             );
-
 
 
 
@@ -414,7 +386,6 @@ public class HouseStorage {
                             path + ".pos1"
                     )
             );
-
 
 
             house.setPos2(
@@ -444,9 +415,9 @@ public class HouseStorage {
             // ==========================
 
 
-            if(config.contains(path + ".tenants")
-                    && config.getConfigurationSection(path + ".tenants") != null) {
-
+            if(config.getConfigurationSection(
+                    path + ".tenants"
+            ) != null) {
 
 
 
@@ -472,7 +443,6 @@ public class HouseStorage {
                                                 + key
                                         )
                                 );
-
 
 
                     } catch(Exception e) {
@@ -510,7 +480,6 @@ public class HouseStorage {
 
                         RentHouse.RentPermission permission =
                                 house.getPermission(uuid);
-
 
 
 
@@ -573,7 +542,6 @@ public class HouseStorage {
 
 
 
-
             plugin.getRentManager()
                     .getHouses()
                     .put(
@@ -582,13 +550,10 @@ public class HouseStorage {
                     );
 
 
-
         }
 
 
     }
-
-
 
 
 
@@ -629,12 +594,10 @@ public class HouseStorage {
         );
 
 
-
         config.set(
                 path + ".y",
                 location.getY()
         );
-
 
 
         config.set(
@@ -644,8 +607,6 @@ public class HouseStorage {
 
 
     }
-
-
 
 
 
@@ -663,13 +624,11 @@ public class HouseStorage {
     ) {
 
 
-
         if(!config.contains(path + ".world")) {
 
             return null;
 
         }
-
 
 
 
@@ -680,13 +639,11 @@ public class HouseStorage {
 
 
 
-
         if(worldName == null) {
 
             return null;
 
         }
-
 
 
 
