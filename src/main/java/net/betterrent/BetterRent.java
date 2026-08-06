@@ -62,7 +62,6 @@ public final class BetterRent extends JavaPlugin {
 
 
 
-
         // ==========================
         // MANAGERS
         // ==========================
@@ -78,11 +77,6 @@ public final class BetterRent extends JavaPlugin {
 
 
 
-        rentManager =
-                new RentManager(this);
-
-
-
         selectionManager =
                 new SelectionManager(this);
 
@@ -90,7 +84,6 @@ public final class BetterRent extends JavaPlugin {
 
         vaultHook =
                 new VaultHook(this);
-
 
 
 
@@ -105,6 +98,22 @@ public final class BetterRent extends JavaPlugin {
                 new HouseStorage(this);
 
 
+
+
+
+        // ==========================
+        // RENT MANAGER
+        // ==========================
+
+
+        rentManager =
+                new RentManager(this);
+
+
+
+
+
+        // Chargement des maisons
 
         houseStorage.loadHouses();
 
@@ -132,11 +141,12 @@ public final class BetterRent extends JavaPlugin {
 
 
             getLogger().warning(
-                    "Commande /rent absente du plugin.yml"
+                    "Commande /rent introuvable dans plugin.yml"
             );
 
 
         }
+
 
 
 
@@ -160,8 +170,9 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
         // ==========================
-        // EVENTS
+        // LISTENERS
         // ==========================
 
 
@@ -180,7 +191,7 @@ public final class BetterRent extends JavaPlugin {
 
 
         // ==========================
-        // EXPIRATION LOCATION
+        // EXPIRATION DES LOCATIONS
         // ==========================
 
 
