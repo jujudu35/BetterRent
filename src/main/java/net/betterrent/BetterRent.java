@@ -1,6 +1,9 @@
 package net.betterrent;
 
 
+import net.betterrent.command.RentCommand;
+import net.betterrent.command.RentSettingCommand;
+
 import net.betterrent.listeners.RentProtectionListener;
 
 import net.betterrent.managers.ConfigManager;
@@ -8,6 +11,8 @@ import net.betterrent.managers.HookManager;
 import net.betterrent.managers.RentManager;
 
 import net.betterrent.storage.HouseStorage;
+
+import net.betterrent.task.RentExpireTask;
 
 import net.betterrent.vault.VaultHook;
 
@@ -43,7 +48,6 @@ public final class BetterRent extends JavaPlugin {
 
 
 
-
     @Override
     public void onEnable() {
 
@@ -58,10 +62,10 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+        // Managers
 
         configManager =
                 new ConfigManager(this);
-
 
 
 
@@ -70,16 +74,13 @@ public final class BetterRent extends JavaPlugin {
 
 
 
-
         rentManager =
                 new RentManager(this);
 
 
 
-
         selectionManager =
                 new SelectionManager(this);
-
 
 
 
@@ -89,12 +90,40 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+        // Stockage
+
         houseStorage =
                 new HouseStorage(this);
 
 
+        houseStorage.loadHouses();
 
 
+
+
+
+        // Commandes
+
+        getCommand("rent")
+                .setExecutor(
+                        new RentCommand(this)
+                );
+
+
+        if(getCommand("rentsetting") != null) {
+
+            getCommand("rentsetting")
+                    .setExecutor(
+                            new RentSettingCommand(this)
+                    );
+
+        }
+
+
+
+
+
+        // Events
 
         Bukkit.getPluginManager().registerEvents(
                 new RentProtectionListener(this),
@@ -105,13 +134,25 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
+        // Vérification expiration toutes les minutes
+
+        new RentExpireTask(this)
+                .runTaskTimer(
+                        this,
+                        20L,
+                        20L * 60
+                );
+
+
+
+
+
         getLogger().info(
                 "BetterRent activé."
         );
 
-
     }
-
 
 
 
@@ -134,10 +175,10 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
         getLogger().info(
                 "BetterRent désactivé."
         );
-
 
     }
 
@@ -162,15 +203,11 @@ public final class BetterRent extends JavaPlugin {
 
 
 
-
     public ConfigManager getConfigManager() {
 
         return configManager;
 
     }
-
-
-
 
 
 
@@ -188,17 +225,11 @@ public final class BetterRent extends JavaPlugin {
 
 
 
-
-
-
     public RentManager getRentManager() {
 
         return rentManager;
 
     }
-
-
-
 
 
 
@@ -216,9 +247,6 @@ public final class BetterRent extends JavaPlugin {
 
 
 
-
-
-
     public SelectionManager getSelectionManager() {
 
         return selectionManager;
@@ -230,15 +258,11 @@ public final class BetterRent extends JavaPlugin {
 
 
 
-
-
-
     public VaultHook getVaultHook() {
 
         return vaultHook;
 
     }
-
 
 
 }
