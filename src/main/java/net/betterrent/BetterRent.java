@@ -17,6 +17,8 @@ import net.betterrent.storage.HouseStorage;
 
 import net.betterrent.task.RentExpireTask;
 
+import net.betterrent.vault.VaultHook;
+
 import net.betterrent.worldedit.SelectionManager;
 
 
@@ -42,6 +44,8 @@ public final class BetterRent extends JavaPlugin {
     private HouseStorage houseStorage;
 
     private SelectionManager selectionManager;
+
+    private VaultHook vaultHook;
 
 
 
@@ -73,19 +77,8 @@ public final class BetterRent extends JavaPlugin {
 
 
 
-        if(!hookManager.setup()) {
-
-
-            getLogger().severe("Dépendances manquantes.");
-
-            Bukkit.getPluginManager()
-                    .disablePlugin(this);
-
-            return;
-
-        }
-
-
+        vaultHook =
+                new VaultHook(this);
 
 
 
@@ -96,51 +89,49 @@ public final class BetterRent extends JavaPlugin {
 
 
 
-        houseStorage =
-                new HouseStorage(this);
-
-
-
-
         selectionManager =
                 new SelectionManager(this);
 
 
 
 
-
-        houseStorage.loadHouses();
-
-
-
-
-
-
-        registerListeners();
-
-
-        registerCommands();
-
-
-        startTasks();
+        houseStorage =
+                new HouseStorage(this);
 
 
 
 
 
 
-        getLogger().info("BetterRent activé !");
-
-    }
+        if(getCommand("rent") != null) {
 
 
+            getCommand("rent")
+                    .setExecutor(
+                            new RentCommand(this)
+                    );
+
+
+        }
 
 
 
 
 
+        if(getCommand("rentsetting") != null) {
 
-    private void registerListeners() {
+
+            getCommand("rentsetting")
+                    .setExecutor(
+                            new RentSettingCommand(this)
+                    );
+
+
+        }
+
+
+
+
 
 
 
@@ -175,7 +166,20 @@ public final class BetterRent extends JavaPlugin {
                 );
 
 
-    }
+
+
+
+
+
+        new RentExpireTask(
+                this,
+                20L,
+                20L * 60
+        ).runTaskTimer(
+                this,
+                20L,
+                20L * 60
+        );
 
 
 
@@ -183,51 +187,12 @@ public final class BetterRent extends JavaPlugin {
 
 
 
-
-
-
-    private void registerCommands() {
-
-
-
-        getCommand("rent")
-                .setExecutor(
-                        new RentCommand(this)
-                );
-
-
-
-        getCommand("rentsetting")
-                .setExecutor(
-                        new RentSettingCommand(this)
-                );
-
-
-    }
-
-
-
-
-
-
-
-
-
-
-    private void startTasks() {
-
-
-
-        new RentExpireTask(this)
-                .runTaskTimer(
-                        this,
-                        20L,
-                        20L * 60
-                );
+        getLogger().info(
+                "BetterRent activé."
+        );
 
 
     }
-
 
 
 
@@ -267,6 +232,7 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
     public static BetterRent getInstance() {
 
 
@@ -274,6 +240,8 @@ public final class BetterRent extends JavaPlugin {
 
 
     }
+
+
 
 
 
@@ -295,6 +263,8 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
+
     public HookManager getHookManager() {
 
 
@@ -302,6 +272,8 @@ public final class BetterRent extends JavaPlugin {
 
 
     }
+
+
 
 
 
@@ -323,6 +295,8 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
+
     public HouseStorage getHouseStorage() {
 
 
@@ -337,10 +311,28 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
+
     public SelectionManager getSelectionManager() {
 
 
         return selectionManager;
+
+
+    }
+
+
+
+
+
+
+
+
+
+    public VaultHook getVaultHook() {
+
+
+        return vaultHook;
 
 
     }
