@@ -4,19 +4,30 @@ on:
   push:
     branches:
       - main
+
   pull_request:
     branches:
       - main
 
+  workflow_dispatch:
+
+
 jobs:
   build:
 
+    name: Build BetterRent Plugin
+
     runs-on: ubuntu-latest
 
+
     steps:
+
+      # Récupération du code
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+
+      # Installation Java
       - name: Set up Java 25
         uses: actions/setup-java@v4
         with:
@@ -24,11 +35,21 @@ jobs:
           java-version: '25'
           cache: maven
 
+
+      # Compilation Maven
       - name: Build Plugin
         run: mvn clean package
 
-      - name: Upload Plugin
+
+      # Vérification du JAR
+      - name: Check Build Output
+        run: ls -la target/
+
+
+      # Envoi du plugin compilé
+      - name: Upload BetterRent JAR
         uses: actions/upload-artifact@v4
         with:
           name: BetterRent
           path: target/*.jar
+          if-no-files-found: error
