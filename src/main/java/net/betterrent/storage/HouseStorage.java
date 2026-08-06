@@ -1,7 +1,9 @@
 package net.betterrent.storage;
 
+
 import net.betterrent.BetterRent;
 import net.betterrent.model.RentHouse;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -12,10 +14,13 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
 
+
+
 public class HouseStorage {
 
 
     private final BetterRent plugin;
+
 
     private File file;
 
@@ -23,17 +28,21 @@ public class HouseStorage {
 
 
 
+
     public HouseStorage(BetterRent plugin) {
 
         this.plugin = plugin;
 
-        load();
+        loadFile();
 
     }
 
 
 
-    private void load() {
+
+
+    private void loadFile() {
+
 
         file = new File(
                 plugin.getDataFolder(),
@@ -41,13 +50,15 @@ public class HouseStorage {
         );
 
 
-        if (!file.exists()) {
+
+        if(!file.exists()) {
+
 
             try {
 
                 file.createNewFile();
 
-            } catch (IOException e) {
+            } catch(IOException e) {
 
                 e.printStackTrace();
 
@@ -56,7 +67,11 @@ public class HouseStorage {
         }
 
 
-        config = YamlConfiguration.loadConfiguration(file);
+
+        config =
+                YamlConfiguration
+                        .loadConfiguration(file);
+
 
     }
 
@@ -64,18 +79,40 @@ public class HouseStorage {
 
 
 
+
+
+
+    // ==========================
+    // SAUVEGARDE
+    // ==========================
+
+
     public void save() {
 
 
-        for (Map.Entry<String, RentHouse> entry :
+        config.set(
+                "houses",
+                null
+        );
+
+
+
+        for(Map.Entry<String, RentHouse> entry :
                 plugin.getRentManager()
                         .getHouses()
                         .entrySet()) {
 
 
-            String path = "houses." + entry.getKey();
 
-            RentHouse house = entry.getValue();
+            String path =
+                    "houses."
+                    + entry.getKey();
+
+
+
+            RentHouse house =
+                    entry.getValue();
+
 
 
 
@@ -85,6 +122,7 @@ public class HouseStorage {
             );
 
 
+
             config.set(
                     path + ".price",
                     house.getPricePerDay()
@@ -92,7 +130,8 @@ public class HouseStorage {
 
 
 
-            if (house.getOwner() != null) {
+            if(house.getOwner() != null) {
+
 
                 config.set(
                         path + ".owner",
@@ -107,6 +146,7 @@ public class HouseStorage {
                     path + ".expire",
                     house.getExpireTime()
             );
+
 
 
 
@@ -130,65 +170,103 @@ public class HouseStorage {
 
 
 
-            config.set(
-                    path + ".trusted",
-                    house.getTrustedPlayers()
-                            .stream()
-                            .map(UUID::toString)
-                            .toList()
-            );
 
 
 
-            config.set(path + ".permissions.open-doors",
-                    house.canOpenDoors());
+            // COLOCATAIRES
 
-            config.set(path + ".permissions.open-trapdoors",
-                    house.canOpenTrapdoors());
+            for(UUID uuid :
+                    house.getTenants()) {
 
-            config.set(path + ".permissions.open-fence-gates",
-                    house.canOpenFenceGates());
 
-            config.set(path + ".permissions.place-blocks",
-                    house.canPlaceBlocks());
+                config.set(
+                        path + ".tenants." + uuid,
+                        uuid.toString()
+                );
 
-            config.set(path + ".permissions.break-blocks",
-                    house.canBreakBlocks());
 
-            config.set(path + ".permissions.open-chests",
-                    house.canOpenChests());
+            }
 
-            config.set(path + ".permissions.open-barrels",
-                    house.canOpenBarrels());
 
-            config.set(path + ".permissions.open-shulkers",
-                    house.canOpenShulkers());
 
-            config.set(path + ".permissions.use-furnaces",
-                    house.canUseFurnaces());
 
-            config.set(path + ".permissions.use-anvils",
-                    house.canUseAnvils());
 
-            config.set(path + ".permissions.use-crafting",
-                    house.canUseCrafting());
 
-            config.set(path + ".permissions.use-enchanting",
-                    house.canUseEnchanting());
+            // PERMISSIONS
+
+            for(UUID uuid :
+                    house.getPermissions()
+                            .keySet()) {
+
+
+
+                RentHouse.RentPermission perm =
+                        house.getPermission(uuid);
+
+
+
+                String permPath =
+                        path
+                        + ".permissions."
+                        + uuid;
+
+
+
+                config.set(
+                        permPath + ".doors",
+                        perm.canDoors()
+                );
+
+
+                config.set(
+                        permPath + ".storage",
+                        perm.canStorage()
+                );
+
+
+                config.set(
+                        permPath + ".use",
+                        perm.canUse()
+                );
+
+
+                config.set(
+                        permPath + ".place",
+                        perm.canPlace()
+                );
+
+
+                config.set(
+                        permPath + ".break",
+                        perm.canBreak()
+                );
+
+
+            }
+
 
         }
+
+
+
 
 
 
         try {
 
+
             config.save(file);
 
-        } catch (IOException e) {
+
+
+        } catch(IOException e) {
+
 
             e.printStackTrace();
 
+
         }
+
 
     }
 
@@ -196,72 +274,152 @@ public class HouseStorage {
 
 
 
+
+
+
+
+    // ==========================
+    // CHARGEMENT
+    // ==========================
+
+
     public void loadHouses() {
 
 
-        if (!config.contains("houses")) {
+        if(!config.contains("houses")) {
 
             return;
 
         }
 
 
-        for (String key :
+
+
+        for(String id :
                 config.getConfigurationSection("houses")
                         .getKeys(false)) {
 
 
-            String path = "houses." + key;
 
-
-            RentHouse house = new RentHouse(
-                    config.getString(path + ".name"),
-                    config.getDouble(path + ".price")
-            );
+            String path =
+                    "houses."
+                    + id;
 
 
 
-            if (config.contains(path + ".owner")) {
+
+            RentHouse house =
+                    new RentHouse(
+                            config.getString(
+                                    path + ".name"
+                            ),
+                            config.getDouble(
+                                    path + ".price"
+                            )
+                    );
+
+
+
+
+
+
+            if(config.contains(path+".owner")) {
+
 
                 house.setOwner(
                         UUID.fromString(
-                                config.getString(path + ".owner")
+                                config.getString(
+                                        path+".owner"
+                                )
                         )
                 );
+
 
             }
 
 
 
+
+
             house.setExpireTime(
-                    config.getLong(path + ".expire")
+                    config.getLong(
+                            path+".expire"
+                    )
             );
+
+
+
 
 
             house.setPos1(
-                    loadLocation(path + ".pos1")
+                    loadLocation(
+                            path+".pos1"
+                    )
             );
+
 
 
             house.setPos2(
-                    loadLocation(path + ".pos2")
+                    loadLocation(
+                            path+".pos2"
+                    )
             );
+
+
+
 
 
             house.setWorldGuardRegion(
-                    config.getString(path + ".region")
+                    config.getString(
+                            path+".region"
+                    )
             );
+
+
+
+
+
+
+            // CHARGER COLOCATAIRES
+
+
+            if(config.contains(path+".tenants")) {
+
+
+                for(String uuid :
+                        config.getConfigurationSection(
+                                path+".tenants"
+                        ).getKeys(false)) {
+
+
+
+                    house.addTenant(
+                            UUID.fromString(uuid)
+                    );
+
+
+                }
+
+            }
+
+
+
+
 
 
 
             plugin.getRentManager()
                     .getHouses()
                     .put(
-                            key,
+                            id,
                             house
                     );
 
+
+
         }
+
+
 
     }
 
@@ -269,29 +427,53 @@ public class HouseStorage {
 
 
 
-    private void saveLocation(Location loc, String path) {
 
 
-        if (loc == null) {
+
+
+
+    private void saveLocation(
+            Location loc,
+            String path
+    ) {
+
+
+        if(loc == null) {
 
             return;
 
         }
 
 
-        config.set(path + ".world",
-                loc.getWorld().getName());
 
-        config.set(path + ".x",
-                loc.getX());
 
-        config.set(path + ".y",
-                loc.getY());
+        config.set(
+                path+".world",
+                loc.getWorld().getName()
+        );
 
-        config.set(path + ".z",
-                loc.getZ());
+
+        config.set(
+                path+".x",
+                loc.getX()
+        );
+
+
+        config.set(
+                path+".y",
+                loc.getY()
+        );
+
+
+        config.set(
+                path+".z",
+                loc.getZ()
+        );
+
 
     }
+
+
 
 
 
@@ -300,22 +482,40 @@ public class HouseStorage {
     private Location loadLocation(String path) {
 
 
-        if (!config.contains(path + ".world")) {
+        if(!config.contains(path+".world")) {
+
 
             return null;
 
         }
 
 
+
+
         return new Location(
+
                 Bukkit.getWorld(
-                        config.getString(path + ".world")
+                        config.getString(
+                                path+".world"
+                        )
                 ),
-                config.getDouble(path + ".x"),
-                config.getDouble(path + ".y"),
-                config.getDouble(path + ".z")
+
+                config.getDouble(
+                        path+".x"
+                ),
+
+                config.getDouble(
+                        path+".y"
+                ),
+
+                config.getDouble(
+                        path+".z"
+                )
+
         );
 
+
     }
+
 
 }
