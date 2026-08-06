@@ -30,7 +30,6 @@ public class RentCommand implements CommandExecutor {
 
 
 
-
     @Override
     public boolean onCommand(
             CommandSender sender,
@@ -41,7 +40,7 @@ public class RentCommand implements CommandExecutor {
 
 
 
-        if(!(sender instanceof Player player)) {
+        if (!(sender instanceof Player player)) {
 
             sender.sendMessage(
                     "Commande réservée aux joueurs."
@@ -55,25 +54,10 @@ public class RentCommand implements CommandExecutor {
 
 
 
-        if(!player.hasPermission("betterrent.admin")) {
-
-
-            player.sendMessage(
-                    ChatColor.RED +
-                    "Vous n'avez pas la permission."
-            );
-
-            return true;
-
-        }
-
-
-
-
-
-        if(args.length == 0) {
+        if (args.length == 0) {
 
             sendHelp(player);
+
             return true;
 
         }
@@ -87,10 +71,23 @@ public class RentCommand implements CommandExecutor {
         // CREATE
         // ==========================
 
-        if(args[0].equalsIgnoreCase("create")) {
+        if (args[0].equalsIgnoreCase("create")) {
 
 
-            if(args.length < 2) {
+            if (!player.hasPermission("betterrent.create")) {
+
+                player.sendMessage(
+                        ChatColor.RED +
+                        "Vous n'avez pas la permission."
+                );
+
+                return true;
+
+            }
+
+
+
+            if (args.length < 2) {
 
                 player.sendMessage(
                         ChatColor.RED +
@@ -100,6 +97,7 @@ public class RentCommand implements CommandExecutor {
                 return true;
 
             }
+
 
 
 
@@ -127,14 +125,32 @@ public class RentCommand implements CommandExecutor {
 
 
 
-            } catch(Exception e) {
+            } catch (Exception e) {
 
 
                 player.sendMessage(
                         ChatColor.RED +
-                        "Type de maison inconnu."
+                        "Type inconnu."
                 );
 
+
+                player.sendMessage(
+                        ChatColor.YELLOW +
+                        "Types disponibles :"
+                );
+
+
+                for(RentManager.HouseType type :
+                        RentManager.HouseType.values()) {
+
+
+                    player.sendMessage(
+                            ChatColor.GRAY +
+                            "- "
+                            + type.name()
+                    );
+
+                }
 
             }
 
@@ -149,6 +165,7 @@ public class RentCommand implements CommandExecutor {
 
 
 
+
         // ==========================
         // DELETE
         // ==========================
@@ -156,12 +173,27 @@ public class RentCommand implements CommandExecutor {
         if(args[0].equalsIgnoreCase("delete")) {
 
 
+            if (!player.hasPermission("betterrent.delete")) {
+
+                player.sendMessage(
+                        ChatColor.RED +
+                        "Vous n'avez pas la permission."
+                );
+
+                return true;
+
+            }
+
+
+
             if(args.length < 2) {
+
 
                 player.sendMessage(
                         ChatColor.RED +
                         "/rent delete <id>"
                 );
+
 
                 return true;
 
@@ -203,11 +235,13 @@ public class RentCommand implements CommandExecutor {
 
 
 
+
         // ==========================
         // INFO
         // ==========================
 
         if(args[0].equalsIgnoreCase("info")) {
+
 
 
             if(args.length < 2) {
@@ -223,6 +257,7 @@ public class RentCommand implements CommandExecutor {
 
 
 
+
             RentHouse house =
                     plugin.getRentManager()
                             .getHouse(args[1]);
@@ -231,10 +266,12 @@ public class RentCommand implements CommandExecutor {
 
             if(house == null) {
 
+
                 player.sendMessage(
                         ChatColor.RED +
                         "Maison introuvable."
                 );
+
 
                 return true;
 
@@ -245,7 +282,7 @@ public class RentCommand implements CommandExecutor {
 
             player.sendMessage(
                     ChatColor.GOLD +
-                    "====== Maison ======"
+                    "====== BetterRent ======"
             );
 
 
@@ -260,6 +297,7 @@ public class RentCommand implements CommandExecutor {
                     ChatColor.YELLOW +
                     "Prix : "
                     + house.getPricePerDay()
+                    + "$/jour"
             );
 
 
@@ -272,13 +310,14 @@ public class RentCommand implements CommandExecutor {
 
             player.sendMessage(
                     ChatColor.GOLD +
-                    "================="
+                    "======================"
             );
 
 
             return true;
 
         }
+
 
 
 
@@ -294,6 +333,7 @@ public class RentCommand implements CommandExecutor {
         if(args[0].equalsIgnoreCase("setregion")) {
 
 
+
             if(args.length < 2) {
 
 
@@ -306,6 +346,8 @@ public class RentCommand implements CommandExecutor {
                 return true;
 
             }
+
+
 
 
 
@@ -336,6 +378,7 @@ public class RentCommand implements CommandExecutor {
                             .getPos1(player);
 
 
+
             var pos2 =
                     plugin.getSelectionManager()
                             .getPos2(player);
@@ -360,7 +403,9 @@ public class RentCommand implements CommandExecutor {
 
 
             house.setPos1(pos1);
+
             house.setPos2(pos2);
+
 
 
 
@@ -381,6 +426,7 @@ public class RentCommand implements CommandExecutor {
 
 
 
+
         // ==========================
         // LIST
         // ==========================
@@ -388,10 +434,30 @@ public class RentCommand implements CommandExecutor {
         if(args[0].equalsIgnoreCase("list")) {
 
 
+
             player.sendMessage(
                     ChatColor.GOLD +
-                    "Maisons : "
+                    "===== Maisons ====="
             );
+
+
+
+            if(plugin.getRentManager()
+                    .getHouses()
+                    .isEmpty()) {
+
+
+                player.sendMessage(
+                        ChatColor.GRAY +
+                        "Aucune maison."
+                );
+
+
+                return true;
+
+            }
+
+
 
 
             for(String id :
@@ -419,11 +485,15 @@ public class RentCommand implements CommandExecutor {
 
 
 
+
         sendHelp(player);
+
 
         return true;
 
     }
+
+
 
 
 
@@ -471,7 +541,5 @@ public class RentCommand implements CommandExecutor {
 
 
     }
-
-
 
 }
