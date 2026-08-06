@@ -1,21 +1,13 @@
 package net.betterrent;
 
 
-import net.betterrent.command.RentCommand;
-import net.betterrent.command.RentSettingCommand;
-
-import net.betterrent.listeners.BlockListener;
-import net.betterrent.listeners.DoorListener;
-import net.betterrent.listeners.InventoryListener;
-import net.betterrent.listeners.SignListener;
+import net.betterrent.listeners.RentProtectionListener;
 
 import net.betterrent.managers.ConfigManager;
 import net.betterrent.managers.HookManager;
 import net.betterrent.managers.RentManager;
 
 import net.betterrent.storage.HouseStorage;
-
-import net.betterrent.task.RentExpireTask;
 
 import net.betterrent.vault.VaultHook;
 
@@ -51,6 +43,7 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
     @Override
     public void onEnable() {
 
@@ -71,14 +64,9 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
         hookManager =
                 new HookManager(this);
-
-
-
-
-        vaultHook =
-                new VaultHook(this);
 
 
 
@@ -95,6 +83,12 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+        vaultHook =
+                new VaultHook(this);
+
+
+
+
         houseStorage =
                 new HouseStorage(this);
 
@@ -102,86 +96,10 @@ public final class BetterRent extends JavaPlugin {
 
 
 
-
-        if(getCommand("rent") != null) {
-
-
-            getCommand("rent")
-                    .setExecutor(
-                            new RentCommand(this)
-                    );
-
-
-        }
-
-
-
-
-
-        if(getCommand("rentsetting") != null) {
-
-
-            getCommand("rentsetting")
-                    .setExecutor(
-                            new RentSettingCommand(this)
-                    );
-
-
-        }
-
-
-
-
-
-
-
-        Bukkit.getPluginManager()
-                .registerEvents(
-                        new BlockListener(this),
-                        this
-                );
-
-
-
-        Bukkit.getPluginManager()
-                .registerEvents(
-                        new DoorListener(this),
-                        this
-                );
-
-
-
-        Bukkit.getPluginManager()
-                .registerEvents(
-                        new InventoryListener(this),
-                        this
-                );
-
-
-
-        Bukkit.getPluginManager()
-                .registerEvents(
-                        new SignListener(this),
-                        this
-                );
-
-
-
-
-
-
-
-        new RentExpireTask(
-                this,
-                20L,
-                20L * 60
-        ).runTaskTimer(
-                this,
-                20L,
-                20L * 60
+        Bukkit.getPluginManager().registerEvents(
+                new RentProtectionListener(this),
+                this
         );
-
-
 
 
 
@@ -193,7 +111,6 @@ public final class BetterRent extends JavaPlugin {
 
 
     }
-
 
 
 
@@ -217,7 +134,6 @@ public final class BetterRent extends JavaPlugin {
 
 
 
-
         getLogger().info(
                 "BetterRent désactivé."
         );
@@ -235,9 +151,7 @@ public final class BetterRent extends JavaPlugin {
 
     public static BetterRent getInstance() {
 
-
         return instance;
-
 
     }
 
@@ -251,9 +165,7 @@ public final class BetterRent extends JavaPlugin {
 
     public ConfigManager getConfigManager() {
 
-
         return configManager;
-
 
     }
 
@@ -267,9 +179,7 @@ public final class BetterRent extends JavaPlugin {
 
     public HookManager getHookManager() {
 
-
         return hookManager;
-
 
     }
 
@@ -283,9 +193,7 @@ public final class BetterRent extends JavaPlugin {
 
     public RentManager getRentManager() {
 
-
         return rentManager;
-
 
     }
 
@@ -299,9 +207,7 @@ public final class BetterRent extends JavaPlugin {
 
     public HouseStorage getHouseStorage() {
 
-
         return houseStorage;
-
 
     }
 
@@ -315,9 +221,7 @@ public final class BetterRent extends JavaPlugin {
 
     public SelectionManager getSelectionManager() {
 
-
         return selectionManager;
-
 
     }
 
@@ -331,9 +235,7 @@ public final class BetterRent extends JavaPlugin {
 
     public VaultHook getVaultHook() {
 
-
         return vaultHook;
-
 
     }
 
