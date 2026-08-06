@@ -1,7 +1,9 @@
 package net.betterrent.command;
 
+
 import net.betterrent.BetterRent;
 import net.betterrent.model.RentHouse;
+
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -9,10 +11,13 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 
+
 public class RentSettingCommand implements CommandExecutor {
 
 
+
     private final BetterRent plugin;
+
 
 
 
@@ -21,6 +26,8 @@ public class RentSettingCommand implements CommandExecutor {
         this.plugin = plugin;
 
     }
+
+
 
 
 
@@ -36,11 +43,13 @@ public class RentSettingCommand implements CommandExecutor {
 
 
 
-        if (!(sender instanceof Player player)) {
+        if(!(sender instanceof Player player)) {
+
 
             sender.sendMessage(
                     "Commande réservée aux joueurs."
             );
+
 
             return true;
 
@@ -48,8 +57,11 @@ public class RentSettingCommand implements CommandExecutor {
 
 
 
-        if (!player.isOp()
-                && !player.hasPermission("betterrent.admin")) {
+
+
+
+
+        if(!player.hasPermission("betterrent.admin")) {
 
 
             player.sendMessage(
@@ -57,6 +69,7 @@ public class RentSettingCommand implements CommandExecutor {
                     "Vous n'avez pas la permission."
             );
 
+
             return true;
 
         }
@@ -64,27 +77,43 @@ public class RentSettingCommand implements CommandExecutor {
 
 
 
-        if (args.length < 3) {
+
+
+
+
+        if(args.length < 3) {
 
 
             sendHelp(player);
 
+
             return true;
 
         }
 
 
 
-        String houseName = args[0];
+
+
+
+
+
+        String houseId =
+                args[0];
+
+
+
 
 
         RentHouse house =
                 plugin.getRentManager()
-                        .getHouse(houseName);
+                        .getHouse(houseId);
 
 
 
-        if (house == null) {
+
+
+        if(house == null) {
 
 
             player.sendMessage(
@@ -100,118 +129,169 @@ public class RentSettingCommand implements CommandExecutor {
 
 
 
-        String setting = args[1];
-
-        boolean value;
 
 
 
-        try {
 
-            value = Boolean.parseBoolean(args[2]);
-
-        } catch (Exception e) {
-
-
-            player.sendMessage(
-                    ChatColor.RED +
-                    "Utilise true ou false."
-            );
-
-
-            return true;
-
-        }
+        String permissionName =
+                args[1].toLowerCase();
 
 
 
 
 
-        switch (setting.toLowerCase()) {
+        boolean value =
+                Boolean.parseBoolean(args[2]);
 
 
-            case "open-doors" -> {
 
-                house.setOpenDoors(value);
+
+
+
+
+
+        switch(permissionName) {
+
+
+            case "doors" -> {
+
+
+                for(Player target :
+                        player.getServer()
+                                .getOnlinePlayers()) {
+
+
+                    if(house.isTenant(
+                            target.getUniqueId()
+                    )) {
+
+
+                        house.getPermission(
+                                target.getUniqueId()
+                        ).setDoors(value);
+
+
+                    }
+
+                }
+
 
             }
 
 
-            case "open-trapdoors" -> {
 
-                house.setOpenTrapdoors(value);
+            case "storage" -> {
+
+
+
+                for(Player target :
+                        player.getServer()
+                                .getOnlinePlayers()) {
+
+
+                    if(house.isTenant(
+                            target.getUniqueId()
+                    )) {
+
+
+                        house.getPermission(
+                                target.getUniqueId()
+                        ).setStorage(value);
+
+
+                    }
+
+                }
+
 
             }
 
 
-            case "open-fence-gates" -> {
 
-                house.setOpenFenceGates(value);
+            case "use" -> {
+
+
+
+                for(Player target :
+                        player.getServer()
+                                .getOnlinePlayers()) {
+
+
+                    if(house.isTenant(
+                            target.getUniqueId()
+                    )) {
+
+
+                        house.getPermission(
+                                target.getUniqueId()
+                        ).setUse(value);
+
+
+                    }
+
+                }
+
+
+            }
+                case "place" -> {
+
+
+
+                for(Player target :
+                        player.getServer()
+                                .getOnlinePlayers()) {
+
+
+                    if(house.isTenant(
+                            target.getUniqueId()
+                    )) {
+
+
+                        house.getPermission(
+                                target.getUniqueId()
+                        ).setPlace(value);
+
+
+                    }
+
+                }
+
 
             }
 
 
-            case "place-blocks" -> {
 
-                house.setPlaceBlocks(value);
+
+
+
+            case "break" -> {
+
+
+
+                for(Player target :
+                        player.getServer()
+                                .getOnlinePlayers()) {
+
+
+                    if(house.isTenant(
+                            target.getUniqueId()
+                    )) {
+
+
+                        house.getPermission(
+                                target.getUniqueId()
+                        ).setBreak(value);
+
+
+                    }
+
+                }
+
 
             }
 
 
-            case "break-blocks" -> {
 
-                house.setBreakBlocks(value);
-
-            }
-
-
-            case "open-chests" -> {
-
-                house.setOpenChests(value);
-
-            }
-
-
-            case "open-barrels" -> {
-
-                house.setOpenBarrels(value);
-
-            }
-
-
-            case "open-shulkers" -> {
-
-                house.setOpenShulkers(value);
-
-            }
-
-
-            case "use-furnaces" -> {
-
-                house.setUseFurnaces(value);
-
-            }
-
-
-            case "use-anvils" -> {
-
-                house.setUseAnvils(value);
-
-            }
-
-
-            case "use-crafting" -> {
-
-                house.setUseCrafting(value);
-
-            }
-
-
-            case "use-enchanting" -> {
-
-                house.setUseEnchanting(value);
-
-            }
 
 
 
@@ -226,11 +306,15 @@ public class RentSettingCommand implements CommandExecutor {
 
                 sendHelp(player);
 
+
                 return true;
 
             }
 
+
         }
+
+
 
 
 
@@ -241,21 +325,25 @@ public class RentSettingCommand implements CommandExecutor {
 
 
 
+
+
+
         player.sendMessage(
                 ChatColor.GREEN +
-                "Permission " +
-                setting +
-                " de " +
-                houseName +
-                " mise à " +
-                value
+                "Permission "
+                + permissionName
+                + " changée en "
+                + value
         );
 
 
 
         return true;
 
+
     }
+
+
 
 
 
@@ -266,10 +354,12 @@ public class RentSettingCommand implements CommandExecutor {
     private void sendHelp(Player player) {
 
 
+
         player.sendMessage(
                 ChatColor.GOLD +
                 "===== BetterRent Setting ====="
         );
+
 
 
         player.sendMessage(
@@ -278,36 +368,46 @@ public class RentSettingCommand implements CommandExecutor {
         );
 
 
+
         player.sendMessage(
                 ChatColor.GRAY +
-                "Permissions :"
+                "Permissions disponibles :"
+        );
+
+
+
+        player.sendMessage(
+                ChatColor.GRAY +
+                "- doors"
         );
 
 
         player.sendMessage(
                 ChatColor.GRAY +
-                "open-doors, open-trapdoors, open-fence-gates"
+                "- storage"
         );
 
 
         player.sendMessage(
                 ChatColor.GRAY +
-                "place-blocks, break-blocks"
+                "- use"
         );
 
 
         player.sendMessage(
                 ChatColor.GRAY +
-                "open-chests, open-barrels, open-shulkers"
+                "- place"
         );
 
 
         player.sendMessage(
                 ChatColor.GRAY +
-                "use-furnaces, use-anvils, use-crafting, use-enchanting"
+                "- break"
         );
 
 
     }
+
+
 
 }
