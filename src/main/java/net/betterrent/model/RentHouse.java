@@ -18,7 +18,6 @@ public class RentHouse {
     private long expireTime;
 
 
-
     private Location pos1;
 
     private Location pos2;
@@ -41,9 +40,39 @@ public class RentHouse {
 
 
 
+    // Permissions maison
 
-    public RentHouse(String name, double pricePerDay) {
+    private boolean openDoors = true;
 
+    private boolean openTrapdoors = true;
+
+    private boolean openFenceGates = true;
+
+    private boolean placeBlocks = true;
+
+    private boolean breakBlocks = true;
+
+    private boolean openChests = true;
+
+    private boolean openBarrels = true;
+
+    private boolean openShulkers = true;
+
+    private boolean useFurnaces = true;
+
+    private boolean useAnvils = true;
+
+    private boolean useCrafting = true;
+
+    private boolean useEnchanting = true;
+
+
+
+
+    public RentHouse(
+            String name,
+            double pricePerDay
+    ) {
 
         this.name = name;
 
@@ -60,6 +89,8 @@ public class RentHouse {
         loadDefaultBlockedBlocks();
 
     }
+
+
 
 
 
@@ -91,9 +122,14 @@ public class RentHouse {
 
             }
 
+
         }
 
+
     }
+
+
+
 
 
 
@@ -102,6 +138,7 @@ public class RentHouse {
         return name;
 
     }
+
 
 
 
@@ -114,7 +151,9 @@ public class RentHouse {
 
 
 
-  // ==========================
+
+
+    // ==========================
     // PROPRIETAIRE
     // ==========================
 
@@ -136,8 +175,10 @@ public class RentHouse {
 
 
 
+
+
     // ==========================
-    // TEMPS LOCATION
+    // LOCATION
     // ==========================
 
 
@@ -157,6 +198,7 @@ public class RentHouse {
 
 
 
+
     public boolean isRented() {
 
         return owner != null;
@@ -168,17 +210,11 @@ public class RentHouse {
     public boolean isExpired() {
 
 
-        if(owner == null) {
+        return owner != null
+                && expireTime <= System.currentTimeMillis();
 
-            return false;
-
-        }
-
-
-        return expireTime <= System.currentTimeMillis();
 
     }
-
 
 
 
@@ -190,19 +226,16 @@ public class RentHouse {
 
 
 
-
     public long getRemainingTime() {
 
 
-        long time =
-                expireTime
-                - System.currentTimeMillis();
+        return Math.max(
+                expireTime - System.currentTimeMillis(),
+                0
+        );
 
-
-        return Math.max(time, 0);
 
     }
-
 
 
 
@@ -263,6 +296,7 @@ public class RentHouse {
 
 
 
+
     public String getWorldGuardRegion() {
 
         return worldGuardRegion;
@@ -271,11 +305,12 @@ public class RentHouse {
 
 
 
-    public void setWorldGuardRegion(String worldGuardRegion) {
+    public void setWorldGuardRegion(String region) {
 
-        this.worldGuardRegion = worldGuardRegion;
+        this.worldGuardRegion = region;
 
     }
+
 
 
 
@@ -300,57 +335,14 @@ public class RentHouse {
 
 
 
+        return location.getBlockX() >= Math.min(pos1.getBlockX(), pos2.getBlockX())
+                && location.getBlockX() <= Math.max(pos1.getBlockX(), pos2.getBlockX())
 
-        int minX = Math.min(
-                pos1.getBlockX(),
-                pos2.getBlockX()
-        );
+                && location.getBlockY() >= Math.min(pos1.getBlockY(), pos2.getBlockY())
+                && location.getBlockY() <= Math.max(pos1.getBlockY(), pos2.getBlockY())
 
-
-        int maxX = Math.max(
-                pos1.getBlockX(),
-                pos2.getBlockX()
-        );
-
-
-
-        int minY = Math.min(
-                pos1.getBlockY(),
-                pos2.getBlockY()
-        );
-
-
-        int maxY = Math.max(
-                pos1.getBlockY(),
-                pos2.getBlockY()
-        );
-
-
-
-        int minZ = Math.min(
-                pos1.getBlockZ(),
-                pos2.getBlockZ()
-        );
-
-
-        int maxZ = Math.max(
-                pos1.getBlockZ(),
-                pos2.getBlockZ()
-        );
-
-
-
-        return location.getBlockX() >= minX
-                && location.getBlockX() <= maxX
-                && location.getBlockY() >= minY
-                && location.getBlockY() <= maxY
-                && location.getBlockZ() >= minZ
-                && location.getBlockZ() <= maxZ;
-
-    }
-
-
-
+                && location.getBlockZ() >= Math.min(pos1.getBlockZ(), pos2.getBlockZ())
+                && location.getBlockZ() <= Math.max(pos1.getBlockZ(), pos2.getBlockZ());
 
  // ==========================
     // COLOCATAIRES
@@ -358,6 +350,13 @@ public class RentHouse {
 
 
     public boolean addTenant(UUID uuid) {
+
+
+        if(uuid == null) {
+
+            return false;
+
+        }
 
 
         if(tenants.size() >= MAX_TENANTS) {
@@ -368,26 +367,27 @@ public class RentHouse {
 
 
 
-        if(!tenants.contains(uuid)) {
+        if(tenants.contains(uuid)) {
 
-
-            tenants.add(uuid);
-
-
-            permissions.put(
-                    uuid,
-                    new RentPermission()
-            );
-
-
-            return true;
+            return false;
 
         }
 
 
-        return false;
+
+        tenants.add(uuid);
+
+
+        permissions.put(
+                uuid,
+                new RentPermission()
+        );
+
+
+        return true;
 
     }
+
 
 
 
@@ -405,6 +405,7 @@ public class RentHouse {
 
 
 
+
     public boolean isTenant(UUID uuid) {
 
 
@@ -412,6 +413,7 @@ public class RentHouse {
 
 
     }
+
 
 
 
@@ -426,35 +428,6 @@ public class RentHouse {
 
 
 
-
-    public int getTenantCount() {
-
-
-        return tenants.size();
-
-
-    }
-
-
-
-
-    public int getMaxTenants() {
-
-
-        return MAX_TENANTS;
-
-
-    }
-
-
-
-
-
-
-
-    // ==========================
-    // PERMISSIONS
-    // ==========================
 
 
     public RentPermission getPermission(UUID uuid) {
@@ -480,36 +453,12 @@ public class RentHouse {
 
 
 
-    public Map<UUID, RentPermission> getPermissions() {
-
-
-        return permissions;
-
-
-    }
-
-
-
-
-
 
 
 
     // ==========================
     // BLOCS INTERDITS
     // ==========================
-
-
-    public Set<Material> getBlockedPlaceBlocks() {
-
-
-        return blockedPlaceBlocks;
-
-
-    }
-
-
-
 
 
     public boolean isBlockedPlace(Material material) {
@@ -522,6 +471,14 @@ public class RentHouse {
 
 
 
+    public Set<Material> getBlockedPlaceBlocks() {
+
+
+        return blockedPlaceBlocks;
+
+
+    }
+
 
 
     public void addBlockedPlace(Material material) {
@@ -531,8 +488,6 @@ public class RentHouse {
 
 
     }
-
-
 
 
 
@@ -549,32 +504,231 @@ public class RentHouse {
 
 
 
+    // ==========================
+    // SETTINGS MAISON
+    // ==========================
+
+
+    public boolean canOpenDoors() {
+
+        return openDoors;
+
+    }
+
+
+    public void setOpenDoors(boolean value) {
+
+        openDoors = value;
+
+    }
+
+
+
+
+    public boolean canOpenTrapdoors() {
+
+        return openTrapdoors;
+
+    }
+
+
+    public void setOpenTrapdoors(boolean value) {
+
+        openTrapdoors = value;
+
+    }
+
+
+
+
+    public boolean canOpenFenceGates() {
+
+        return openFenceGates;
+
+    }
+
+
+    public void setOpenFenceGates(boolean value) {
+
+        openFenceGates = value;
+
+    }
+
+
+
+
+
+    public boolean canPlaceBlocks() {
+
+        return placeBlocks;
+
+    }
+
+
+    public void setPlaceBlocks(boolean value) {
+
+        placeBlocks = value;
+
+    }
+
+
+
+
+
+    public boolean canBreakBlocks() {
+
+        return breakBlocks;
+
+    }
+
+
+    public void setBreakBlocks(boolean value) {
+
+        breakBlocks = value;
+
+    }
+
+
+
+
+
+    public boolean canOpenChests() {
+
+        return openChests;
+
+    }
+
+
+    public void setOpenChests(boolean value) {
+
+        openChests = value;
+
+    }
+
+
+
+
+
+    public boolean canOpenBarrels() {
+
+        return openBarrels;
+
+    }
+
+
+    public void setOpenBarrels(boolean value) {
+
+        openBarrels = value;
+
+    }
+
+
+
+
+
+    public boolean canOpenShulkers() {
+
+        return openShulkers;
+
+    }
+
+
+    public void setOpenShulkers(boolean value) {
+
+        openShulkers = value;
+
+    }
+
+
+
+
+
+    public boolean canUseFurnaces() {
+
+        return useFurnaces;
+
+    }
+
+
+    public void setUseFurnaces(boolean value) {
+
+        useFurnaces = value;
+
+    }
+
+
+
+
+
+    public boolean canUseAnvils() {
+
+        return useAnvils;
+
+    }
+
+
+    public void setUseAnvils(boolean value) {
+
+        useAnvils = value;
+
+    }
+
+
+
+
+
+    public boolean canUseCrafting() {
+
+        return useCrafting;
+
+    }
+
+
+    public void setUseCrafting(boolean value) {
+
+        useCrafting = value;
+
+    }
+
+
+
+
+
+    public boolean canUseEnchanting() {
+
+        return useEnchanting;
+
+    }
+
+
+    public void setUseEnchanting(boolean value) {
+
+        useEnchanting = value;
+
+    }
+
+
+
+
 
 
     // ==========================
-    // CLASSE PERMISSION
+    // CLASSE PERMISSIONS
     // ==========================
 
 
     public static class RentPermission {
 
 
-
         private boolean doors = true;
-
 
         private boolean storage = true;
 
-
         private boolean usage = true;
-
 
         private boolean place = true;
 
-
         private boolean breakBlocks = true;
-
-
 
 
 
@@ -591,7 +745,6 @@ public class RentHouse {
             doors = value;
 
         }
-
 
 
 
@@ -613,7 +766,6 @@ public class RentHouse {
 
 
 
-
         public boolean canUse() {
 
             return usage;
@@ -631,7 +783,6 @@ public class RentHouse {
 
 
 
-
         public boolean canPlace() {
 
             return place;
@@ -645,7 +796,6 @@ public class RentHouse {
             place = value;
 
         }
-
 
 
 
