@@ -29,6 +29,8 @@ public class HouseStorage {
 
 
 
+
+
     public HouseStorage(BetterRent plugin) {
 
         this.plugin = plugin;
@@ -36,6 +38,8 @@ public class HouseStorage {
         load();
 
     }
+
+
 
 
 
@@ -72,6 +76,7 @@ public class HouseStorage {
                 YamlConfiguration
                         .loadConfiguration(file);
 
+
     }
 
 
@@ -80,8 +85,10 @@ public class HouseStorage {
 
 
 
+
+
     // =================================
-    // SAUVEGARDE DES MAISONS
+    // SAUVEGARDE
     // =================================
 
 
@@ -153,10 +160,12 @@ public class HouseStorage {
 
 
 
+
             config.set(
                     path + ".expire",
                     house.getExpireTime()
             );
+
 
 
 
@@ -178,6 +187,7 @@ public class HouseStorage {
 
 
 
+
             config.set(
                     path + ".region",
                     house.getWorldGuardRegion()
@@ -188,11 +198,9 @@ public class HouseStorage {
 
 
 
-
-
-            // =============================
+            // ==========================
             // COLOCATAIRES
-            // =============================
+            // ==========================
 
 
             for(int i = 0;
@@ -200,9 +208,11 @@ public class HouseStorage {
                 i++) {
 
 
+
                 UUID uuid =
                         house.getTenants()
                                 .get(i);
+
 
 
 
@@ -221,12 +231,10 @@ public class HouseStorage {
 
 
 
-
                 String permissionPath =
                         path
                         + ".permissions."
                         + uuid;
-
 
 
 
@@ -269,6 +277,7 @@ public class HouseStorage {
             }
 
 
+
         }
 
 
@@ -293,8 +302,8 @@ public class HouseStorage {
 
 
     }
-      // =================================
-    // CHARGEMENT DES MAISONS
+     // =================================
+    // CHARGEMENT
     // =================================
 
 
@@ -318,6 +327,8 @@ public class HouseStorage {
 
 
 
+
+
         for(String id :
                 config.getConfigurationSection("houses")
                         .getKeys(false)) {
@@ -334,12 +345,8 @@ public class HouseStorage {
 
             RentHouse house =
                     new RentHouse(
-                            config.getString(
-                                    path + ".name"
-                            ),
-                            config.getDouble(
-                                    path + ".price"
-                            )
+                            config.getString(path + ".name"),
+                            config.getDouble(path + ".price")
                     );
 
 
@@ -348,9 +355,10 @@ public class HouseStorage {
 
 
 
-            // =============================
+
+            // ==========================
             // PROPRIETAIRE
-            // =============================
+            // ==========================
 
 
             if(config.contains(path + ".owner")) {
@@ -382,6 +390,7 @@ public class HouseStorage {
 
 
 
+
             house.setExpireTime(
                     config.getLong(
                             path + ".expire"
@@ -393,9 +402,11 @@ public class HouseStorage {
 
 
 
-            // =============================
+
+
+            // ==========================
             // REGION
-            // =============================
+            // ==========================
 
 
             house.setPos1(
@@ -428,13 +439,14 @@ public class HouseStorage {
 
 
 
-            // =============================
+            // ==========================
             // COLOCATAIRES
-            // =============================
+            // ==========================
 
 
             if(config.contains(path + ".tenants")
                     && config.getConfigurationSection(path + ".tenants") != null) {
+
 
 
 
@@ -445,109 +457,115 @@ public class HouseStorage {
 
 
 
+                    UUID uuid;
+
+
+
                     try {
 
 
-                        UUID uuid =
+                        uuid =
                                 UUID.fromString(
                                         config.getString(
-                                                path + ".tenants." + key
+                                                path
+                                                + ".tenants."
+                                                + key
                                         )
                                 );
 
 
 
-                        house.addTenant(uuid);
+                    } catch(Exception e) {
 
 
-
-
-
-
-                        String permissionPath =
-                                path
-                                + ".permissions."
-                                + uuid;
-
-
-
-
-
-
-                        if(config.contains(permissionPath)) {
-
-
-
-                            RentHouse.RentPermission permission =
-                                    house.getPermission(uuid);
-
-
-
-
-
-
-                            permission.setDoors(
-                                    config.getBoolean(
-                                            permissionPath + ".doors",
-                                            true
-                                    )
-                            );
-
-
-
-                            permission.setStorage(
-                                    config.getBoolean(
-                                            permissionPath + ".storage",
-                                            true
-                                    )
-                            );
-
-
-
-                            permission.setUse(
-                                    config.getBoolean(
-                                            permissionPath + ".usage",
-                                            true
-                                    )
-                            );
-
-
-
-                            permission.setPlace(
-                                    config.getBoolean(
-                                            permissionPath + ".place",
-                                            true
-                                    )
-                            );
-
-
-
-                            permission.setBreak(
-                                    config.getBoolean(
-                                            permissionPath + ".break",
-                                            true
-                                    )
-                            );
-
-
-                        }
-
-
-
-                    } catch(Exception ignored) {
-
+                        continue;
 
 
                     }
 
 
 
+
+
+                    house.addTenant(uuid);
+
+
+
+
+
+
+                    String permissionPath =
+                            path
+                            + ".permissions."
+                            + uuid;
+
+
+
+
+
+
+
+                    if(config.contains(permissionPath)) {
+
+
+                        RentHouse.RentPermission permission =
+                                house.getPermission(uuid);
+
+
+
+
+
+                        permission.setDoors(
+                                config.getBoolean(
+                                        permissionPath + ".doors",
+                                        true
+                                )
+                        );
+
+
+
+                        permission.setStorage(
+                                config.getBoolean(
+                                        permissionPath + ".storage",
+                                        true
+                                )
+                        );
+
+
+
+                        permission.setUse(
+                                config.getBoolean(
+                                        permissionPath + ".usage",
+                                        true
+                                )
+                        );
+
+
+
+                        permission.setPlace(
+                                config.getBoolean(
+                                        permissionPath + ".place",
+                                        true
+                                )
+                        );
+
+
+
+                        permission.setBreak(
+                                config.getBoolean(
+                                        permissionPath + ".break",
+                                        true
+                                )
+                        );
+
+
+                    }
+
+
                 }
 
 
-
             }
-
 
 
 
@@ -589,7 +607,6 @@ public class HouseStorage {
     ) {
 
 
-
         if(location == null) {
 
             return;
@@ -626,7 +643,6 @@ public class HouseStorage {
         );
 
 
-
     }
 
 
@@ -642,7 +658,9 @@ public class HouseStorage {
     // =================================
 
 
-    private Location loadLocation(String path) {
+    private Location loadLocation(
+            String path
+    ) {
 
 
 
@@ -655,12 +673,10 @@ public class HouseStorage {
 
 
 
-
         String worldName =
                 config.getString(
                         path + ".world"
                 );
-
 
 
 
@@ -674,13 +690,11 @@ public class HouseStorage {
 
 
 
-
         if(Bukkit.getWorld(worldName) == null) {
 
             return null;
 
         }
-
 
 
 
