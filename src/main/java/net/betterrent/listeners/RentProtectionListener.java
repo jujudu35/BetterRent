@@ -1,4 +1,5 @@
-package net.betterrent.listener;
+package net.betterrent.listeners;
+
 
 import net.betterrent.BetterRent;
 import net.betterrent.model.RentHouse;
@@ -19,6 +20,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 public class RentProtectionListener implements Listener {
 
 
+
     private final BetterRent plugin;
 
 
@@ -33,15 +35,19 @@ public class RentProtectionListener implements Listener {
 
 
 
+
     // =================================
     // CASSER DES BLOCS
     // =================================
+
 
     @EventHandler
     public void onBreak(BlockBreakEvent event) {
 
 
-        Player player = event.getPlayer();
+        Player player =
+                event.getPlayer();
+
 
 
         RentHouse house =
@@ -50,15 +56,7 @@ public class RentProtectionListener implements Listener {
 
 
 
-        if (house == null) {
-            return;
-        }
-
-
-
-        // Propriétaire
-
-        if(player.getUniqueId().equals(house.getOwner())) {
+        if(house == null) {
 
             return;
 
@@ -67,7 +65,20 @@ public class RentProtectionListener implements Listener {
 
 
 
-        // Colocataire
+        // propriétaire
+
+        if(player.getUniqueId()
+                .equals(house.getOwner())) {
+
+            return;
+
+        }
+
+
+
+
+
+        // colocataire
 
         if(house.isTenant(player.getUniqueId())) {
 
@@ -76,11 +87,14 @@ public class RentProtectionListener implements Listener {
                     player.getUniqueId()
             ).canBreak()) {
 
+
                 return;
 
             }
 
+
         }
+
 
 
 
@@ -103,15 +117,18 @@ public class RentProtectionListener implements Listener {
 
 
 
+
     // =================================
     // POSER DES BLOCS
     // =================================
+
 
     @EventHandler
     public void onPlace(BlockPlaceEvent event) {
 
 
-        Player player = event.getPlayer();
+        Player player =
+                event.getPlayer();
 
 
 
@@ -129,6 +146,8 @@ public class RentProtectionListener implements Listener {
 
 
 
+
+
         Material material =
                 event.getBlock()
                         .getType();
@@ -137,8 +156,7 @@ public class RentProtectionListener implements Listener {
 
 
 
-        // BLOCS INTERDITS POUR TOUT LE MONDE
-        // MEME LE PROPRIETAIRE
+        // BLOCS INTERDITS POUR TOUS
 
         if(house.isBlockedPlace(material)) {
 
@@ -148,7 +166,7 @@ public class RentProtectionListener implements Listener {
 
             player.sendMessage(
                     ChatColor.RED +
-                    "Ce bloc est interdit dans une maison louée."
+                    "Ce bloc est interdit dans cette maison."
             );
 
 
@@ -160,7 +178,9 @@ public class RentProtectionListener implements Listener {
 
 
 
-        // Propriétaire
+
+
+        // propriétaire
 
         if(player.getUniqueId()
                 .equals(house.getOwner())) {
@@ -175,7 +195,8 @@ public class RentProtectionListener implements Listener {
 
 
 
-        // Colocataire
+
+        // colocataire
 
         if(house.isTenant(player.getUniqueId())) {
 
@@ -195,7 +216,9 @@ public class RentProtectionListener implements Listener {
 
 
 
+
         event.setCancelled(true);
+
 
 
         player.sendMessage(
@@ -215,14 +238,16 @@ public class RentProtectionListener implements Listener {
 
 
     // =================================
-    // UTILISATION DES BLOCS
+    // UTILISATION
     // =================================
+
 
     @EventHandler
     public void onInteract(PlayerInteractEvent event) {
 
 
-        Player player = event.getPlayer();
+        Player player =
+                event.getPlayer();
 
 
 
@@ -240,11 +265,14 @@ public class RentProtectionListener implements Listener {
 
 
 
+
         if(event.getClickedBlock() == null) {
 
             return;
 
         }
+
+
 
 
 
@@ -256,10 +284,14 @@ public class RentProtectionListener implements Listener {
 
 
 
-        // Propriétaire
+
+
+
+        // propriétaire
 
         if(player.getUniqueId()
                 .equals(house.getOwner())) {
+
 
             return;
 
@@ -269,19 +301,66 @@ public class RentProtectionListener implements Listener {
 
 
 
+
+        // colocataire
+
         if(house.isTenant(player.getUniqueId())) {
 
 
-            if(house.getPermission(
-                    player.getUniqueId()
-            ).canUse()) {
+            RentHouse.RentPermission permission =
+                    house.getPermission(
+                            player.getUniqueId()
+                    );
 
+
+
+
+
+            // Coffres / stockage
+
+            if(isStorage(material)) {
+
+
+                if(permission.canStorage()) {
+
+                    return;
+
+                }
+
+            }
+
+
+
+
+            // Portes
+
+            if(isDoor(material)) {
+
+
+                if(permission.canDoors()) {
+
+                    return;
+
+                }
+
+            }
+
+
+
+
+
+            // Autres blocs
+
+            if(permission.canUse()) {
 
                 return;
 
             }
 
+
         }
+
+
 
 
 
@@ -289,10 +368,51 @@ public class RentProtectionListener implements Listener {
         event.setCancelled(true);
 
 
+
         player.sendMessage(
                 ChatColor.RED +
                 "Vous ne pouvez pas utiliser ce bloc."
         );
+
+
+    }
+
+
+
+
+
+
+
+
+
+    private boolean isDoor(Material material) {
+
+
+        return material.name().endsWith("_DOOR")
+                ||
+                material.name().endsWith("_TRAPDOOR")
+                ||
+                material.name().endsWith("_FENCE_GATE");
+
+
+    }
+
+
+
+
+
+
+
+    private boolean isStorage(Material material) {
+
+
+        return material == Material.CHEST
+                ||
+                material == Material.TRAPPED_CHEST
+                ||
+                material == Material.BARREL
+                ||
+                material.name().endsWith("SHULKER_BOX");
 
 
     }
