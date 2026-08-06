@@ -1,3 +1,4 @@
+
 package net.betterrent.listeners;
 
 
@@ -20,9 +21,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 public class RentProtectionListener implements Listener {
 
 
-
     private final BetterRent plugin;
-
 
 
     public RentProtectionListener(BetterRent plugin) {
@@ -33,21 +32,16 @@ public class RentProtectionListener implements Listener {
 
 
 
-
-
-
-    // =================================
-    // CASSER DES BLOCS
-    // =================================
+    // ==========================
+    // BREAK
+    // ==========================
 
 
     @EventHandler
     public void onBreak(BlockBreakEvent event) {
 
 
-        Player player =
-                event.getPlayer();
-
+        Player player = event.getPlayer();
 
 
         RentHouse house =
@@ -55,17 +49,9 @@ public class RentProtectionListener implements Listener {
                         .getHouseAt(player.getLocation());
 
 
-
-        if(house == null) {
-
-            return;
-
-        }
+        if(house == null) return;
 
 
-
-
-        // propriétaire
 
         if(player.getUniqueId()
                 .equals(house.getOwner())) {
@@ -76,37 +62,23 @@ public class RentProtectionListener implements Listener {
 
 
 
+        if(house.isTenant(player.getUniqueId())
+                &&
+                house.getPermission(player.getUniqueId())
+                        .canBreak()) {
 
-
-        // colocataire
-
-        if(house.isTenant(player.getUniqueId())) {
-
-
-            if(house.getPermission(
-                    player.getUniqueId()
-            ).canBreak()) {
-
-
-                return;
-
-            }
-
+            return;
 
         }
 
 
 
-
-
         event.setCancelled(true);
-
 
         player.sendMessage(
                 ChatColor.RED +
                 "Vous ne pouvez pas casser ici."
         );
-
 
     }
 
@@ -115,21 +87,16 @@ public class RentProtectionListener implements Listener {
 
 
 
-
-
-
-    // =================================
-    // POSER DES BLOCS
-    // =================================
+    // ==========================
+    // PLACE
+    // ==========================
 
 
     @EventHandler
     public void onPlace(BlockPlaceEvent event) {
 
 
-        Player player =
-                event.getPlayer();
-
+        Player player = event.getPlayer();
 
 
         RentHouse house =
@@ -137,55 +104,14 @@ public class RentProtectionListener implements Listener {
                         .getHouseAt(player.getLocation());
 
 
-
-        if(house == null) {
-
-            return;
-
-        }
+        if(house == null) return;
 
 
 
-
-
-        Material material =
-                event.getBlock()
-                        .getType();
-
-
-
-
-
-        // BLOCS INTERDITS POUR TOUS
-
-        if(house.isBlockedPlace(material)) {
-
-
-            event.setCancelled(true);
-
-
-            player.sendMessage(
-                    ChatColor.RED +
-                    "Ce bloc est interdit dans cette maison."
-            );
-
-
-            return;
-
-        }
-
-
-
-
-
-
-
-        // propriétaire
 
         if(player.getUniqueId()
                 .equals(house.getOwner())) {
 
-
             return;
 
         }
@@ -193,32 +119,18 @@ public class RentProtectionListener implements Listener {
 
 
 
+        if(house.isTenant(player.getUniqueId())
+                &&
+                house.getPermission(player.getUniqueId())
+                        .canPlace()) {
 
-
-
-        // colocataire
-
-        if(house.isTenant(player.getUniqueId())) {
-
-
-            if(house.getPermission(
-                    player.getUniqueId()
-            ).canPlace()) {
-
-
-                return;
-
-            }
+            return;
 
         }
 
 
 
-
-
-
         event.setCancelled(true);
-
 
 
         player.sendMessage(
@@ -237,9 +149,9 @@ public class RentProtectionListener implements Listener {
 
 
 
-    // =================================
-    // UTILISATION
-    // =================================
+    // ==========================
+    // UTILISATION BLOCS
+    // ==========================
 
 
     @EventHandler
@@ -257,22 +169,11 @@ public class RentProtectionListener implements Listener {
 
 
 
-        if(house == null) {
-
-            return;
-
-        }
+        if(house == null) return;
 
 
 
-
-        if(event.getClickedBlock() == null) {
-
-            return;
-
-        }
-
-
+        if(event.getClickedBlock() == null) return;
 
 
 
@@ -284,14 +185,20 @@ public class RentProtectionListener implements Listener {
 
 
 
-
-
-
-        // propriétaire
-
         if(player.getUniqueId()
                 .equals(house.getOwner())) {
 
+            return;
+
+        }
+
+
+
+
+        if(!house.isTenant(player.getUniqueId())) {
+
+
+            event.setCancelled(true);
 
             return;
 
@@ -301,62 +208,46 @@ public class RentProtectionListener implements Listener {
 
 
 
-
-        // colocataire
-
-        if(house.isTenant(player.getUniqueId())) {
-
-
-            RentHouse.RentPermission permission =
-                    house.getPermission(
-                            player.getUniqueId()
-                    );
+        RentHouse.RentPermission permission =
+                house.getPermission(
+                        player.getUniqueId()
+                );
 
 
 
 
 
-            // Coffres / stockage
-
-            if(isStorage(material)) {
 
 
-                if(permission.canStorage()) {
+        // Portes
 
-                    return;
-
-                }
-
-            }
+        if(material.name().endsWith("_DOOR")) {
 
 
-
-
-            // Portes
-
-            if(isDoor(material)) {
-
-
-                if(permission.canDoors()) {
-
-                    return;
-
-                }
-
-            }
-
-
-
-
-
-            // Autres blocs
-
-            if(permission.canUse()) {
+            if(house.canOpenDoors()
+                    && permission.canDoors()) {
 
                 return;
 
             }
 
+        }
+
+
+
+
+
+        // Trappes
+
+        if(material.name().endsWith("_TRAPDOOR")) {
+
+
+            if(house.canOpenTrapdoors()
+                    && permission.canDoors()) {
+
+                return;
+
+            }
 
         }
 
@@ -365,54 +256,187 @@ public class RentProtectionListener implements Listener {
 
 
 
-        event.setCancelled(true);
+        // Barrières
 
+        if(material.name().endsWith("_FENCE_GATE")) {
+
+
+            if(house.canOpenFenceGates()
+                    && permission.canDoors()) {
+
+                return;
+
+            }
+
+        }
+
+
+
+
+
+
+
+        // Coffres
+
+        if(material == Material.CHEST
+                ||
+                material == Material.TRAPPED_CHEST) {
+
+
+            if(house.canOpenChests()
+                    && permission.canStorage()) {
+
+                return;
+
+            }
+
+        }
+
+
+
+
+
+
+
+        // Barils
+
+        if(material == Material.BARREL) {
+
+
+            if(house.canOpenBarrels()
+                    && permission.canStorage()) {
+
+                return;
+
+            }
+
+        }
+
+
+
+
+
+
+
+        // Shulkers
+
+        if(material.name().endsWith("SHULKER_BOX")) {
+
+
+            if(house.canOpenShulkers()
+                    && permission.canStorage()) {
+
+                return;
+
+            }
+
+        }
+
+
+
+
+
+
+
+        // Four
+
+        if(material.name().endsWith("FURNACE")) {
+
+
+            if(house.canUseFurnaces()
+                    && permission.canUse()) {
+
+                return;
+
+            }
+
+        }
+
+
+
+
+
+
+
+        // Enclume
+
+        if(material.name().endsWith("ANVIL")) {
+
+
+            if(house.canUseAnvils()
+                    && permission.canUse()) {
+
+                return;
+
+            }
+
+        }
+
+
+
+
+
+
+
+        // Table de craft
+
+        if(material == Material.CRAFTING_TABLE) {
+
+
+            if(house.canUseCrafting()
+                    && permission.canUse()) {
+
+                return;
+
+            }
+
+        }
+
+
+
+
+
+
+
+
+        // Table enchant
+
+        if(material == Material.ENCHANTING_TABLE) {
+
+
+            if(house.canUseEnchanting()
+                    && permission.canUse()) {
+
+                return;
+
+            }
+
+        }
+
+
+
+
+
+
+
+        // Autres utilisations
+
+        if(permission.canUse()) {
+
+            return;
+
+        }
+
+
+
+
+        event.setCancelled(true);
 
 
         player.sendMessage(
                 ChatColor.RED +
                 "Vous ne pouvez pas utiliser ce bloc."
         );
-
-
-    }
-
-
-
-
-
-
-
-
-
-    private boolean isDoor(Material material) {
-
-
-        return material.name().endsWith("_DOOR")
-                ||
-                material.name().endsWith("_TRAPDOOR")
-                ||
-                material.name().endsWith("_FENCE_GATE");
-
-
-    }
-
-
-
-
-
-
-
-    private boolean isStorage(Material material) {
-
-
-        return material == Material.CHEST
-                ||
-                material == Material.TRAPPED_CHEST
-                ||
-                material == Material.BARREL
-                ||
-                material.name().endsWith("SHULKER_BOX");
 
 
     }
