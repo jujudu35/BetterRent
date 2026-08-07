@@ -1,4 +1,4 @@
-papackage net.betterrent.model;
+package net.betterrent.model;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
