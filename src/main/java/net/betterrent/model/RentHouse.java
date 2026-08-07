@@ -519,12 +519,20 @@ public class RentHouse {
 
 
 
-    public boolean isTenant(UUID uuid) {
+   public boolean isTenant(UUID uuid) {
 
+    return tenants.contains(uuid);
 
-        return tenants.contains(uuid);
+}
 
+public boolean isTrusted(UUID uuid) {
+
+    if (uuid == null) {
+        return false;
     }
+
+    return tenants.contains(uuid);
+}
 
 
 
