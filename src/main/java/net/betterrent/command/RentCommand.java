@@ -416,9 +416,8 @@ public class RentCommand implements CommandExecutor {
 
 
             return true;
-
- 
-     }
+  
+        }
 
         
 "     
