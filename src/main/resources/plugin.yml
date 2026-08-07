@@ -3,7 +3,7 @@ version: 1.0.0
 main: net.betterrent.BetterRent
 api-version: 1.21
 
-author: jujudu
+author: jujudu35
 description: Plugin de location de maisons avec Vault, WorldEdit et WorldGuard
 
 depend:
@@ -12,7 +12,6 @@ depend:
   - WorldGuard
 
 commands:
-
   rent:
     description: Gestion des locations de maisons
     usage: /rent
@@ -22,12 +21,10 @@ commands:
 
   rentsetting:
     description: Modifier les paramètres d'une maison
-    usage: /rentsetting <maison> <permission> <true/false>
+    usage: /rentsetting <true/false>
     permission: betterrent.admin
 
-
 permissions:
-
   betterrent.admin:
     description: Accès aux commandes administrateur BetterRent
     default: op
@@ -35,3 +32,7 @@ permissions:
   betterrent.rent:
     description: Louer une maison
     default: true
+
+  betterrent.sign:
+    description: Créer des panneaux BetterRent
+    default: op
