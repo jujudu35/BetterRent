@@ -17,7 +17,7 @@ import org.bukkit.event.block.Action;
 
 
 
-public class InventoryListener implements Listener {
+public class SignListener implements Listener {
 
 
     private final BetterRent plugin;
