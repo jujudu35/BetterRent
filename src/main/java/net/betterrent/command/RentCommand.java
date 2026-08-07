@@ -420,7 +420,6 @@ public class RentCommand implements CommandExecutor {
         }
 
         
-"     
         
         
         
