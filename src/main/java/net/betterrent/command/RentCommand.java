@@ -421,7 +421,9 @@ public class RentCommand implements CommandExecutor {
      }
 
         
-        
+   player.sendMessage(
+        ChatColor.YELLOW +
+        "/rent sign <id>"     
         
         
         
