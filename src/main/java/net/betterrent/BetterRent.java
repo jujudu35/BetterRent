@@ -1,6 +1,5 @@
 package net.betterrent;
 
-
 import net.betterrent.command.RentCommand;
 import net.betterrent.command.RentSettingCommand;
 
@@ -18,19 +17,14 @@ import net.betterrent.vault.VaultHook;
 
 import net.betterrent.worldedit.SelectionManager;
 
-
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
-
 
 
 public final class BetterRent extends JavaPlugin {
 
 
-
     private static BetterRent instance;
-
-
 
     private ConfigManager configManager;
 
@@ -46,19 +40,14 @@ public final class BetterRent extends JavaPlugin {
 
 
 
-
-
     @Override
     public void onEnable() {
-
 
 
         instance = this;
 
 
-
         saveDefaultConfig();
-
 
 
 
@@ -66,26 +55,13 @@ public final class BetterRent extends JavaPlugin {
         // MANAGERS
         // ==========================
 
+        configManager = new ConfigManager(this);
 
-        configManager =
-                new ConfigManager(this);
+        hookManager = new HookManager(this);
 
+        selectionManager = new SelectionManager(this);
 
-
-        hookManager =
-                new HookManager(this);
-
-
-
-        selectionManager =
-                new SelectionManager(this);
-
-
-
-        vaultHook =
-                new VaultHook(this);
-
-
+        vaultHook = new VaultHook(this);
 
 
 
@@ -93,11 +69,7 @@ public final class BetterRent extends JavaPlugin {
         // STORAGE
         // ==========================
 
-
-        houseStorage =
-                new HouseStorage(this);
-
-
+        houseStorage = new HouseStorage(this);
 
 
 
@@ -105,21 +77,10 @@ public final class BetterRent extends JavaPlugin {
         // RENT MANAGER
         // ==========================
 
+        rentManager = new RentManager(this);
 
-        rentManager =
-                new RentManager(this);
-
-
-
-
-
-        // Chargement des maisons
 
         houseStorage.loadHouses();
-
-
-
-
 
 
 
@@ -127,54 +88,37 @@ public final class BetterRent extends JavaPlugin {
         // COMMANDES
         // ==========================
 
-
         if(getCommand("rent") != null) {
-
 
             getCommand("rent")
                     .setExecutor(
                             new RentCommand(this)
                     );
 
-
         } else {
-
 
             getLogger().warning(
                     "Commande /rent introuvable dans plugin.yml"
             );
 
-
         }
 
 
 
-
-
-
         if(getCommand("rentsetting") != null) {
-
 
             getCommand("rentsetting")
                     .setExecutor(
                             new RentSettingCommand(this)
                     );
 
-
         }
-
-
-
-
-
-
 
 
 
         // ==========================
         // LISTENERS
         // ==========================
-
 
         Bukkit.getPluginManager()
                 .registerEvents(
@@ -184,16 +128,9 @@ public final class BetterRent extends JavaPlugin {
 
 
 
-
-
-
-
-
-
         // ==========================
-        // EXPIRATION DES LOCATIONS
+        // EXPIRATION LOCATIONS
         // ==========================
-
 
         new RentExpireTask(this)
                 .runTaskTimer(
@@ -204,23 +141,11 @@ public final class BetterRent extends JavaPlugin {
 
 
 
-
-
-
-
-
-
         getLogger().info(
                 "BetterRent activé avec succès."
         );
 
-
     }
-
-
-
-
-
 
 
 
@@ -229,28 +154,18 @@ public final class BetterRent extends JavaPlugin {
     public void onDisable() {
 
 
-
         if(houseStorage != null) {
-
 
             houseStorage.save();
 
-
         }
-
-
 
 
         getLogger().info(
                 "BetterRent désactivé."
         );
 
-
     }
-
-
-
-
 
 
 
@@ -258,107 +173,57 @@ public final class BetterRent extends JavaPlugin {
 
     public static BetterRent getInstance() {
 
-
         return instance;
 
-
     }
-
-
-
-
-
 
 
 
 
     public ConfigManager getConfigManager() {
 
-
         return configManager;
 
-
     }
-
-
-
-
-
-
 
 
 
     public HookManager getHookManager() {
 
-
         return hookManager;
 
-
     }
-
-
-
-
-
-
 
 
 
     public RentManager getRentManager() {
 
-
         return rentManager;
 
-
     }
-
-
-
-
-
-
 
 
 
     public HouseStorage getHouseStorage() {
 
-
         return houseStorage;
 
-
     }
-
-
-
-
-
-
 
 
 
     public SelectionManager getSelectionManager() {
 
-
         return selectionManager;
 
-
     }
-
-
-
-
-
-
 
 
 
     public VaultHook getVaultHook() {
 
-
         return vaultHook;
 
-
     }
-
 
 }
