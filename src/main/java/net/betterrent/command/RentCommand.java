@@ -425,7 +425,7 @@ public class RentCommand implements CommandExecutor {
         
         
         
-  // ==========================
+    // ==========================
 // SIGN
 // ==========================
 
@@ -442,7 +442,6 @@ if(args[0].equalsIgnoreCase("sign")) {
         return true;
 
     }
-
 
 
     if(args.length < 2) {
@@ -487,14 +486,13 @@ if(args[0].equalsIgnoreCase("sign")) {
 
     player.sendMessage(
             ChatColor.GREEN +
-            "Cliquez maintenant sur un panneau."
+            "Placez ou cliquez sur un panneau."
     );
 
 
     return true;
 
 }
-
 
 
 
