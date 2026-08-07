@@ -4,6 +4,7 @@ import net.betterrent.command.RentCommand;
 import net.betterrent.command.RentSettingCommand;
 
 import net.betterrent.listeners.RentProtectionListener;
+import net.betterrent.listeners.RentSignListener;
 
 import net.betterrent.managers.ConfigManager;
 import net.betterrent.managers.HookManager;
@@ -20,11 +21,11 @@ import net.betterrent.worldedit.SelectionManager;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
-
 public final class BetterRent extends JavaPlugin {
 
 
     private static BetterRent instance;
+
 
     private ConfigManager configManager;
 
@@ -37,6 +38,11 @@ public final class BetterRent extends JavaPlugin {
     private SelectionManager selectionManager;
 
     private VaultHook vaultHook;
+
+
+    // AJOUT POUR LES PANNEAUX
+    private RentSignListener rentSignListener;
+
 
 
 
@@ -84,18 +90,37 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
+        // ==========================
+        // LISTENER PANNEAU
+        // ==========================
+
+        rentSignListener = new RentSignListener(this);
+
+        Bukkit.getPluginManager()
+                .registerEvents(
+                        rentSignListener,
+                        this
+                );
+
+
+
+
         // ==========================
         // COMMANDES
         // ==========================
 
         if(getCommand("rent") != null) {
 
+
             getCommand("rent")
                     .setExecutor(
                             new RentCommand(this)
                     );
 
+
         } else {
+
 
             getLogger().warning(
                     "Commande /rent introuvable dans plugin.yml"
@@ -105,7 +130,9 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
         if(getCommand("rentsetting") != null) {
+
 
             getCommand("rentsetting")
                     .setExecutor(
@@ -116,8 +143,10 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
+
         // ==========================
-        // LISTENERS
+        // LISTENERS PROTECTION
         // ==========================
 
         Bukkit.getPluginManager()
@@ -125,6 +154,8 @@ public final class BetterRent extends JavaPlugin {
                         new RentProtectionListener(this),
                         this
                 );
+
+
 
 
 
@@ -141,11 +172,15 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
+
         getLogger().info(
                 "BetterRent activé avec succès."
         );
 
     }
+
+
 
 
 
@@ -156,7 +191,9 @@ public final class BetterRent extends JavaPlugin {
 
         if(houseStorage != null) {
 
+
             houseStorage.save();
+
 
         }
 
@@ -171,11 +208,17 @@ public final class BetterRent extends JavaPlugin {
 
 
 
+
+
+
     public static BetterRent getInstance() {
 
         return instance;
 
     }
+
+
+
 
 
 
@@ -223,6 +266,17 @@ public final class BetterRent extends JavaPlugin {
     public VaultHook getVaultHook() {
 
         return vaultHook;
+
+    }
+
+
+
+
+    // AJOUT POUR /rent sign
+
+    public RentSignListener getRentSignListener() {
+
+        return rentSignListener;
 
     }
 
