@@ -417,8 +417,73 @@ public class RentCommand implements CommandExecutor {
 
             return true;
 
-        }
+ 
+     }
 
+        
+        
+        
+        
+        
+        
+// ==========================
+// SIGN
+// ==========================
+
+if(args[0].equalsIgnoreCase("sign")) {
+
+
+    if(!player.hasPermission("betterrent.sign")) {
+
+        player.sendMessage(
+                ChatColor.RED +
+                "Vous n'avez pas la permission."
+        );
+
+        return true;
+
+    }
+
+
+    if(args.length < 2) {
+
+        player.sendMessage(
+                ChatColor.RED +
+                "/rent sign <id>"
+        );
+
+        return true;
+
+    }
+
+
+    RentHouse house =
+            plugin.getRentManager()
+                    .getHouse(args[1]);
+
+
+    if(house == null) {
+
+        player.sendMessage(
+                ChatColor.RED +
+                "Maison introuvable."
+        );
+
+        return true;
+
+    }
+
+
+    player.sendMessage(
+            ChatColor.GREEN +
+            "Regardez un panneau pour le lier à : "
+            + args[1]
+    );
+
+
+    return true;
+
+}
 
 
 
