@@ -426,10 +426,10 @@ public class RentCommand implements CommandExecutor {
         
         
   // ==========================
-  // SIGN
-  // ==========================
+// SIGN
+// ==========================
 
-  if(args[0].equalsIgnoreCase("sign")) {
+if(args[0].equalsIgnoreCase("sign")) {
 
 
     if(!player.hasPermission("betterrent.sign")) {
@@ -444,6 +444,7 @@ public class RentCommand implements CommandExecutor {
     }
 
 
+
     if(args.length < 2) {
 
         player.sendMessage(
@@ -456,9 +457,11 @@ public class RentCommand implements CommandExecutor {
     }
 
 
+
     RentHouse house =
             plugin.getRentManager()
                     .getHouse(args[1]);
+
 
 
     if(house == null) {
@@ -473,19 +476,24 @@ public class RentCommand implements CommandExecutor {
     }
 
 
-    plugin.getRentSignListener()
-        .setWaitingSign(player, args[1]);
 
-player.sendMessage(
-        ChatColor.GREEN +
-        "Cliquez maintenant sur un panneau."
-);
+    plugin.getRentSignListener()
+            .setWaitingSign(
+                    player,
+                    args[1]
+            );
+
+
+
+    player.sendMessage(
+            ChatColor.GREEN +
+            "Cliquez maintenant sur un panneau."
+    );
 
 
     return true;
 
 }
-
 
 
 
