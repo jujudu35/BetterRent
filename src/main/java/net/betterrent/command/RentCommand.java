@@ -473,11 +473,13 @@ public class RentCommand implements CommandExecutor {
     }
 
 
-    player.sendMessage(
-            ChatColor.GREEN +
-            "Regardez un panneau pour le lier à : "
-            + args[1]
-    );
+    plugin.getRentSignListener()
+        .setWaitingSign(player, args[1]);
+
+player.sendMessage(
+        ChatColor.GREEN +
+        "Cliquez maintenant sur un panneau."
+);
 
 
     return true;
