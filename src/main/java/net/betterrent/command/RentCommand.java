@@ -421,18 +421,16 @@ public class RentCommand implements CommandExecutor {
      }
 
         
-   player.sendMessage(
-        ChatColor.YELLOW +
-        "/rent sign <id>"     
+"     
         
         
         
         
-// ==========================
-// SIGN
-// ==========================
+  // ==========================
+  // SIGN
+  // ==========================
 
-if(args[0].equalsIgnoreCase("sign")) {
+  if(args[0].equalsIgnoreCase("sign")) {
 
 
     if(!player.hasPermission("betterrent.sign")) {
@@ -595,6 +593,12 @@ if(args[0].equalsIgnoreCase("sign")) {
         );
 
 
+        player.sendMessage(
+        ChatColor.YELLOW +
+        "/rent sign <id>"
+);
+
+        
         player.sendMessage(
                 ChatColor.YELLOW +
                 "/rent delete <id>"
