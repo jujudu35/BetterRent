@@ -1,6 +1,5 @@
 package net.betterrent.managers;
 
-
 import net.betterrent.BetterRent;
 import net.betterrent.model.RentHouse;
 
@@ -10,316 +9,207 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-
-
 public class RentManager {
-
-
 
     private final BetterRent plugin;
 
-
     private final Map<String, RentHouse> houses;
 
-
-
-
-
     public RentManager(BetterRent plugin) {
-
-
         this.plugin = plugin;
-
         this.houses = new HashMap<>();
-
     }
-
-
-
-
-
-
 
     // =================================
     // TYPES DE MAISONS
     // =================================
 
-
     public enum HouseType {
-
 
         MAISON_PAUVRE(
                 "Maison pauvre",
                 10000
         ),
 
-
         GRANDE_MAISON_PAUVRE(
                 "Grande maison pauvre",
                 50000
         ),
-
 
         MAISON_MODERNE(
                 "Maison moderne",
                 100000
         ),
 
-
         GRANDE_MAISON_MODERNE(
                 "Grande maison moderne",
                 500000
         ),
-
 
         MAISON_RICHE(
                 "Maison riche",
                 1000000
         ),
 
-
         GRANDE_MAISON_RICHE(
                 "Grande maison riche",
                 2500000
         );
 
-
-
         private final String displayName;
-
         private final double price;
-
-
-
-
 
         HouseType(
                 String displayName,
                 double price
         ) {
-
-
             this.displayName = displayName;
-
             this.price = price;
-
         }
-
-
-
-
 
         public String getDisplayName() {
-
             return displayName;
-
         }
-
-
-
-
 
         public double getPrice() {
-
             return price;
-
         }
-
-
     }
-
-
-
-
-
-
-
-
 
     // =================================
     // CREATION
     // =================================
 
-
-    public String createHouse(
-            HouseType type
-    ) {
-
+    public String createHouse(HouseType type) {
 
         int number = 1;
-
-
         String id;
 
-
-
         do {
-
-
-            id =
-                    type.name().toLowerCase()
-                    + "_"
-                    + number;
-
-
+            id = type.name().toLowerCase() + "_" + number;
             number++;
+        } while (houses.containsKey(id));
 
-
-        } while(houses.containsKey(id));
-
-
-
-
-
-
-
-        RentHouse house =
-                new RentHouse(
-                        type.getDisplayName(),
-                        type.getPrice()
-                );
-
-
-
-
-
-
-        houses.put(
-                id,
-                house
+        RentHouse house = new RentHouse(
+                type.getDisplayName(),
+                type.getPrice()
         );
 
+        houses.put(id, house);
 
+        save();
 
         return id;
-
-
     }
-
-
-
-
-
-
-
-
 
     // =================================
     // SUPPRESSION
     // =================================
 
+    public boolean deleteHouse(String id) {
 
-    public boolean deleteHouse(
-            String id
-    ) {
-
-
-        if(!houses.containsKey(id)) {
-
+        if (!houses.containsKey(id)) {
             return false;
-
         }
-
-
 
         houses.remove(id);
 
-
         save();
 
-
         return true;
-
-
     }
-
-
-
-
-
-
 
     // =================================
     // GETTERS
     // =================================
 
-
-    public RentHouse getHouse(
-            String id
-    ) {
-
-
+    public RentHouse getHouse(String id) {
         return houses.get(id);
-
-
     }
-
-
-
-
 
     public Map<String, RentHouse> getHouses() {
-
-
         return houses;
-
-
     }
-
-
-
-
-
-
 
     // =================================
     // MAISON A UNE POSITION
     // =================================
 
+    public RentHouse getHouseAt(Location location) {
 
-    public RentHouse getHouseAt(
-            Location location
-    ) {
-
-
-
-        if(location == null) {
-
+        if (location == null) {
             return null;
-
         }
 
+        for (RentHouse house : houses.values()) {
 
-
-
-
-        for(RentHouse house :
-                houses.values()) {
-
-
-            if(house.isInside(location)) {
-
-
+            if (house.isInside(location)) {
                 return house;
-
-
             }
-
-
         }
-
-
-
-
 
         return null;
-
-
     }
-       // =================================
-    // LOUER UNE MAISON
+
+    // =================================
+    // TROUVER LA MAISON DU JOUEUR
     // =================================
 
+    public String getPlayerHouseId(UUID player) {
+
+        if (player == null) {
+            return null;
+        }
+
+        for (Map.Entry<String, RentHouse> entry : houses.entrySet()) {
+
+            RentHouse house = entry.getValue();
+
+            if (house.getOwner() != null
+                    && house.getOwner().equals(player)) {
+
+                return entry.getKey();
+            }
+        }
+
+        return null;
+    }
+
+    // =================================
+    // TROUVER LA MAISON DU JOUEUR
+    // =================================
+
+    public RentHouse getPlayerHouse(UUID player) {
+
+        if (player == null) {
+            return null;
+        }
+
+        for (RentHouse house : houses.values()) {
+
+            if (house.getOwner() != null
+                    && house.getOwner().equals(player)) {
+
+                return house;
+            }
+        }
+
+        return null;
+    }
+
+    // =================================
+    // VERIFIER SI LE JOUEUR POSSEDE
+    // DEJA UNE MAISON
+    // =================================
+
+    public boolean hasHouse(UUID player) {
+
+        return getPlayerHouse(player) != null;
+    }
+
+    // =================================
+    // LOUER UNE MAISON
+    // =================================
 
     public boolean rentHouse(
             String id,
@@ -327,123 +217,83 @@ public class RentManager {
             int days
     ) {
 
+        RentHouse house = getHouse(id);
 
-        RentHouse house =
-                getHouse(id);
-
-
-
-        if(house == null) {
-
+        if (house == null) {
             return false;
-
         }
 
-
-
-        if(!house.isAvailable()) {
-
+        if (player == null) {
             return false;
-
         }
 
-
-
-        if(days <= 0) {
-
+        if (days <= 0) {
             return false;
-
         }
 
+        // Une seule maison par joueur
+        if (hasHouse(player)) {
+            return false;
+        }
 
+        // Maison déjà louée
+        if (!house.isAvailable()) {
+            return false;
+        }
 
-
-
+        long duration =
+                days
+                * 24L
+                * 60L
+                * 60L
+                * 1000L;
 
         house.setOwner(player);
 
-
-
-
-        long duration =
-                days
-                * 24L
-                * 60L
-                * 60L
-                * 1000L;
-
-
-
-
-
         house.setExpireTime(
                 System.currentTimeMillis()
-                + duration
+                        + duration
         );
-
-
 
         save();
 
-
-
         return true;
-
-
     }
 
-
-
-
-
-
-
-
-
     // =================================
-    // PROLONGER LOCATION
+    // PROLONGER UNE LOCATION
     // =================================
-
 
     public boolean extendRent(
             String id,
+            UUID player,
             int days
     ) {
 
+        RentHouse house = getHouse(id);
 
-        RentHouse house =
-                getHouse(id);
-
-
-
-
-        if(house == null) {
-
+        if (house == null) {
             return false;
-
         }
 
-
-
-
-        if(!house.isRented()) {
-
+        if (player == null) {
             return false;
-
         }
 
-
-
-
-        if(days <= 0) {
-
+        if (days <= 0) {
             return false;
-
         }
 
+        if (!house.isRented()) {
+            return false;
+        }
 
+        // Seul le propriétaire peut prolonger
+        if (house.getOwner() == null
+                || !house.getOwner().equals(player)) {
 
-
+            return false;
+        }
 
         long duration =
                 days
@@ -452,318 +302,143 @@ public class RentManager {
                 * 60L
                 * 1000L;
 
-
-
-
+        long baseTime =
+                Math.max(
+                        house.getExpireTime(),
+                        System.currentTimeMillis()
+                );
 
         house.setExpireTime(
-                house.getExpireTime()
-                + duration
+                baseTime + duration
         );
-
-
 
         save();
 
-
-
         return true;
-
-
     }
-
-
-
-
-
-
-
-
 
     // =================================
     // COLOCATAIRES
     // =================================
-
 
     public boolean addTenant(
             String id,
             UUID uuid
     ) {
 
+        RentHouse house = getHouse(id);
 
-        RentHouse house =
-                getHouse(id);
-
-
-
-
-        if(house == null) {
-
+        if (house == null) {
             return false;
-
         }
 
-
-
-
-        if(!house.isRented()) {
-
+        if (!house.isRented()) {
             return false;
-
         }
-
-
-
 
         boolean result =
                 house.addTenant(uuid);
 
-
-
-
-        if(result) {
-
+        if (result) {
             save();
-
         }
 
-
-
-
         return result;
-
-
     }
-
-
-
-
-
-
 
     public boolean removeTenant(
             String id,
             UUID uuid
     ) {
 
+        RentHouse house = getHouse(id);
 
-        RentHouse house =
-                getHouse(id);
-
-
-
-
-        if(house == null) {
-
+        if (house == null) {
             return false;
-
         }
-
-
-
-
 
         house.removeTenant(uuid);
 
-
-
         save();
 
-
-
         return true;
-
-
     }
-
-
-
-
-
-
-
-
 
     // =================================
     // EXPIRATION
     // =================================
 
-
     public void clearExpired() {
-
-
 
         boolean changed = false;
 
+        for (RentHouse house : houses.values()) {
 
-
-
-
-        for(RentHouse house :
-                houses.values()) {
-
-
-
-            if(house.isExpired()) {
-
-
+            if (house.isExpired()) {
 
                 house.clearRent();
 
-
-
                 changed = true;
-
-
             }
-
-
         }
 
-
-
-
-
-
-        if(changed) {
-
-
+        if (changed) {
             save();
-
-
         }
-
-
     }
-
-
-
-
-
-
-
-
 
     // =================================
     // LIBERER UNE MAISON
     // =================================
 
+    public boolean releaseHouse(String id) {
 
-    public boolean releaseHouse(
-            String id
-    ) {
+        RentHouse house = getHouse(id);
 
-
-        RentHouse house =
-                getHouse(id);
-
-
-
-
-        if(house == null) {
-
+        if (house == null) {
             return false;
-
         }
-
-
-
 
         house.clearRent();
 
-
-
         save();
 
-
-
-
         return true;
-
-
     }
-
-
-
-
-
-
-
-
 
     // =================================
     // NOMBRE DE MAISONS
     // =================================
 
-
     public int getHouseCount() {
-
-
         return houses.size();
-
-
     }
 
-
-
-
-
-
-
-
-
     // =================================
-    // SAUVEGARDE RAPIDE
+    // SAUVEGARDE
     // =================================
-
 
     private void save() {
 
+        if (plugin.getHouseStorage() != null) {
 
-        if(plugin.getHouseStorage() != null) {
-
-
-            plugin.getHouseStorage()
-                    .save();
-
-
+            plugin.getHouseStorage().save();
         }
-
-
     }
-
-
-
-
-
-
 
     // =================================
     // RELOAD
     // =================================
 
-
     public void reload() {
-
 
         houses.clear();
 
-
-
-        plugin.getHouseStorage()
-                .loadHouses();
-
-
-
+        plugin.getHouseStorage().loadHouses();
 
         plugin.getLogger().info(
                 houses.size()
-                + " maisons rechargées."
+                        + " maisons rechargées."
         );
-
-
     }
-
-
-
 }
