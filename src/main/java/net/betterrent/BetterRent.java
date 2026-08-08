@@ -14,7 +14,7 @@ import net.betterrent.storage.HouseStorage;
 
 import net.betterrent.task.RentExpireTask;
 
-import net.betterrent.vault.VaultHook;
+import net.betterrent.hook.VaultHook;
 
 import net.betterrent.worldedit.SelectionManager;
 
