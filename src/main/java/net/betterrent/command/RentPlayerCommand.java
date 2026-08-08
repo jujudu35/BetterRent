@@ -1,6 +1,5 @@
 package net.betterrent.command;
 
-
 import net.betterrent.BetterRent;
 import net.betterrent.model.RentHouse;
 
@@ -12,27 +11,13 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-
-
 public class RentPlayerCommand implements CommandExecutor {
-
-
 
     private final BetterRent plugin;
 
-
-
     public RentPlayerCommand(BetterRent plugin) {
-
         this.plugin = plugin;
-
     }
-
-
-
-
-
-
 
     @Override
     public boolean onCommand(
@@ -42,638 +27,481 @@ public class RentPlayerCommand implements CommandExecutor {
             String[] args
     ) {
 
-
-
-        if(!(sender instanceof Player player)) {
-
+        if (!(sender instanceof Player player)) {
 
             sender.sendMessage(
                     "Commande réservée aux joueurs."
             );
 
-
             return true;
-
         }
 
-
-
-
-
-
-        if(args.length == 0) {
-
+        if (args.length == 0) {
             help(player);
-
             return true;
-
         }
 
-
-
-
-
-
-
-        switch(args[0].toLowerCase()) {
-
-
+        switch (args[0].toLowerCase()) {
 
             // =================================
             // LOUER
             // =================================
 
-
             case "rent" -> {
 
-
-
-                if(args.length < 3) {
+                if (args.length < 3) {
 
                     player.sendMessage(
-                            ChatColor.RED +
-                            "/rent rent <maison> <jours>"
+                            ChatColor.RED
+                                    + "/rent rent <maison> <jours>"
                     );
 
                     return true;
-
                 }
-
-
 
                 String id = args[1];
 
-
                 int days;
-
 
                 try {
 
-                    days =
-                            Integer.parseInt(args[2]);
+                    days = Integer.parseInt(args[2]);
 
-                } catch(Exception e) {
-
+                } catch (NumberFormatException e) {
 
                     player.sendMessage(
-                            ChatColor.RED +
-                            "Nombre de jours invalide."
+                            ChatColor.RED
+                                    + "Nombre de jours invalide."
                     );
 
-
                     return true;
-
                 }
 
+                if (days <= 0) {
 
+                    player.sendMessage(
+                            ChatColor.RED
+                                    + "Le nombre de jours doit être supérieur à 0."
+                    );
 
-
+                    return true;
+                }
 
                 RentHouse house =
                         plugin.getRentManager()
                                 .getHouse(id);
 
-
-
-                if(house == null) {
-
+                if (house == null) {
 
                     player.sendMessage(
-                            ChatColor.RED +
-                            "Maison introuvable."
+                            ChatColor.RED
+                                    + "Maison introuvable."
                     );
 
-
                     return true;
-
                 }
 
-
-
-
-
-
-                if(plugin.getRentManager()
+                if (plugin.getRentManager()
                         .rentHouse(
                                 id,
                                 player.getUniqueId(),
                                 days
                         )) {
 
-
-
                     player.sendMessage(
-                            ChatColor.GREEN +
-                            "Maison louée pendant "
-                            + days
-                            + " jours."
+                            ChatColor.GREEN
+                                    + "Maison louée pendant "
+                                    + days
+                                    + " jour"
+                                    + (days > 1 ? "s." : ".")
                     );
-
-
 
                 } else {
 
-
                     player.sendMessage(
-                            ChatColor.RED +
-                            "Impossible de louer cette maison."
+                            ChatColor.RED
+                                    + "Impossible de louer cette maison."
                     );
-
-
                 }
-
-
-
             }
-
-
-
-
-
-
-
-
 
             // =================================
             // PROLONGER
             // =================================
 
-
             case "extend" -> {
 
-
-
-                if(args.length < 3) {
-
+                if (args.length < 3) {
 
                     player.sendMessage(
-                            ChatColor.RED +
-                            "/rent extend <maison> <jours>"
+                            ChatColor.RED
+                                    + "/rent extend <maison> <jours>"
                     );
-
 
                     return true;
-
                 }
 
+                String id = args[1];
 
+                int days;
 
+                try {
 
-                if(plugin.getRentManager()
-                        .extendRent(
-                                args[1],
-                                Integer.parseInt(args[2])
-                        )) {
+                    days = Integer.parseInt(args[2]);
 
-
+                } catch (NumberFormatException e) {
 
                     player.sendMessage(
-                            ChatColor.GREEN +
-                            "Location prolongée."
+                            ChatColor.RED
+                                    + "Nombre de jours invalide."
                     );
 
+                    return true;
+                }
+
+                if (days <= 0) {
+
+                    player.sendMessage(
+                            ChatColor.RED
+                                    + "Le nombre de jours doit être supérieur à 0."
+                    );
+
+                    return true;
+                }
+
+                /*
+                 * IMPORTANT :
+                 * extendRent demande maintenant :
+                 *
+                 * String id
+                 * UUID player
+                 * int days
+                 */
+
+                if (plugin.getRentManager()
+                        .extendRent(
+                                id,
+                                player.getUniqueId(),
+                                days
+                        )) {
+
+                    player.sendMessage(
+                            ChatColor.GREEN
+                                    + "Location prolongée de "
+                                    + days
+                                    + " jour"
+                                    + (days > 1 ? "s." : ".")
+                    );
 
                 } else {
 
-
                     player.sendMessage(
-                            ChatColor.RED +
-                            "Impossible de prolonger."
+                            ChatColor.RED
+                                    + "Impossible de prolonger la location."
                     );
-
-
                 }
-
-
-
             }
-
-
-
-
-
-
-
-
 
             // =================================
             // TRUST
             // =================================
 
-
             case "trust" -> {
 
-
-
-                if(args.length < 3) {
-
+                if (args.length < 3) {
 
                     player.sendMessage(
-                            ChatColor.RED +
-                            "/rent trust <maison> <joueur>"
+                            ChatColor.RED
+                                    + "/rent trust <maison> <joueur>"
                     );
 
-
                     return true;
-
                 }
-
-
-
 
                 RentHouse house =
                         plugin.getRentManager()
                                 .getHouse(args[1]);
 
-
-
-                if(house == null) {
-
+                if (house == null) {
 
                     player.sendMessage(
-                            ChatColor.RED +
-                            "Maison introuvable."
+                            ChatColor.RED
+                                    + "Maison introuvable."
                     );
 
-
                     return true;
-
                 }
 
-
-
-
-
-                if(!player.getUniqueId()
+                if (!player.getUniqueId()
                         .equals(house.getOwner())) {
 
-
                     player.sendMessage(
-                            ChatColor.RED +
-                            "Vous n'êtes pas propriétaire."
+                            ChatColor.RED
+                                    + "Vous n'êtes pas propriétaire."
                     );
 
-
                     return true;
-
                 }
-
-
-
-
-
 
                 OfflinePlayer target =
                         Bukkit.getOfflinePlayer(args[2]);
 
-
-
-
-
-                if(plugin.getRentManager()
+                if (plugin.getRentManager()
                         .addTenant(
                                 args[1],
                                 target.getUniqueId()
                         )) {
 
-
-
                     player.sendMessage(
-                            ChatColor.GREEN +
-                            "Joueur ajouté."
+                            ChatColor.GREEN
+                                    + "Joueur ajouté."
                     );
-
 
                 } else {
 
-
                     player.sendMessage(
-                            ChatColor.RED +
-                            "Impossible d'ajouter ce joueur."
+                            ChatColor.RED
+                                    + "Impossible d'ajouter ce joueur."
                     );
-
-
                 }
-
-
-
             }
-
-
-
-
-
-
-
-
 
             // =================================
             // UNTRUST
             // =================================
 
-
             case "untrust" -> {
 
-
-
-                if(args.length < 3) {
-
+                if (args.length < 3) {
 
                     player.sendMessage(
-                            ChatColor.RED +
-                            "/rent untrust <maison> <joueur>"
+                            ChatColor.RED
+                                    + "/rent untrust <maison> <joueur>"
                     );
 
-
                     return true;
-
                 }
 
+                RentHouse house =
+                        plugin.getRentManager()
+                                .getHouse(args[1]);
 
+                if (house == null) {
 
+                    player.sendMessage(
+                            ChatColor.RED
+                                    + "Maison introuvable."
+                    );
+
+                    return true;
+                }
+
+                if (!player.getUniqueId()
+                        .equals(house.getOwner())) {
+
+                    player.sendMessage(
+                            ChatColor.RED
+                                    + "Vous n'êtes pas propriétaire."
+                    );
+
+                    return true;
+                }
 
                 OfflinePlayer target =
                         Bukkit.getOfflinePlayer(args[2]);
 
-
-
-                if(plugin.getRentManager()
+                if (plugin.getRentManager()
                         .removeTenant(
                                 args[1],
                                 target.getUniqueId()
                         )) {
 
-
-
                     player.sendMessage(
-                            ChatColor.GREEN +
-                            "Joueur retiré."
+                            ChatColor.GREEN
+                                    + "Joueur retiré."
                     );
 
+                } else {
 
+                    player.sendMessage(
+                            ChatColor.RED
+                                    + "Impossible de retirer ce joueur."
+                    );
                 }
-
-
-
             }
-
-
-
-
-
-
-
-
 
             // =================================
             // QUITTER
             // =================================
 
-
             case "leave" -> {
 
+                if (args.length < 2) {
+
+                    player.sendMessage(
+                            ChatColor.RED
+                                    + "/rent leave <maison>"
+                    );
+
+                    return true;
+                }
 
                 RentHouse house =
                         plugin.getRentManager()
                                 .getHouse(args[1]);
 
-
-
-                if(house == null) {
-
+                if (house == null) {
 
                     player.sendMessage(
-                            ChatColor.RED +
-                            "Maison introuvable."
+                            ChatColor.RED
+                                    + "Maison introuvable."
                     );
 
-
                     return true;
-
                 }
-
-
-
-
-
 
                 house.removeTenant(
                         player.getUniqueId()
                 );
 
-
-
                 player.sendMessage(
-                        ChatColor.GREEN +
-                        "Vous avez quitté la maison."
+                        ChatColor.GREEN
+                                + "Vous avez quitté la maison."
                 );
-
-
             }
-
-
-
-
-
-
-
-
 
             // =================================
             // INFO
             // =================================
 
-
             case "info" -> {
 
-
-
-                if(args.length < 2) {
-
+                if (args.length < 2) {
 
                     player.sendMessage(
-                            ChatColor.RED +
-                            "/rent info <maison>"
+                            ChatColor.RED
+                                    + "/rent info <maison>"
                     );
 
-
                     return true;
-
                 }
-
-
 
                 RentHouse house =
                         plugin.getRentManager()
                                 .getHouse(args[1]);
 
-
-
-                if(house == null) {
-
+                if (house == null) {
 
                     player.sendMessage(
-                            ChatColor.RED +
-                            "Maison inconnue."
+                            ChatColor.RED
+                                    + "Maison inconnue."
                     );
 
-
                     return true;
-
                 }
 
-
-
-
-
                 player.sendMessage(
-                        ChatColor.GOLD +
-                        "===== Maison ====="
+                        ChatColor.GOLD
+                                + "===== Maison ====="
                 );
 
-
                 player.sendMessage(
-                        ChatColor.YELLOW +
-                        "Nom : "
-                        + house.getName()
+                        ChatColor.YELLOW
+                                + "Nom : "
+                                + house.getName()
                 );
 
-
                 player.sendMessage(
-                        ChatColor.YELLOW +
-                        "Prix : "
-                        + house.getPricePerDay()
+                        ChatColor.YELLOW
+                                + "Prix : "
+                                + house.getPricePerDay()
                 );
 
-
                 player.sendMessage(
-                        ChatColor.YELLOW +
-                        "Louée : "
-                        + house.isRented()
+                        ChatColor.YELLOW
+                                + "Louée : "
+                                + house.isRented()
                 );
-
-
-
             }
-
-
-
-
-
-
-
-
-
 
             // =================================
             // LIST
             // =================================
 
-
             case "list" -> {
 
-
                 player.sendMessage(
-                        ChatColor.GOLD +
-                        "Maisons disponibles :"
+                        ChatColor.GOLD
+                                + "Maisons disponibles :"
                 );
 
-
-
-                for(String id :
+                for (String id :
                         plugin.getRentManager()
                                 .getHouses()
                                 .keySet()) {
 
-
                     player.sendMessage(
-                            ChatColor.YELLOW +
-                            "- "
-                            + id
+                            ChatColor.YELLOW
+                                    + "- "
+                                    + id
                     );
-
-
                 }
-
-
             }
 
-
-
-
+            // =================================
+            // AIDE
+            // =================================
 
             default -> help(player);
-
-
-
         }
 
-
-
-
         return true;
-
     }
 
-
-
-
-
-
-
+    // =================================
+    // AIDE
+    // =================================
 
     private void help(Player player) {
 
-
         player.sendMessage(
-                ChatColor.GOLD +
-                "===== BetterRent ====="
+                ChatColor.GOLD
+                        + "===== BetterRent ====="
         );
 
-
         player.sendMessage(
-                ChatColor.YELLOW +
-                "/rent list"
+                ChatColor.YELLOW
+                        + "/rent list"
         );
 
-
         player.sendMessage(
-                ChatColor.YELLOW +
-                "/rent info <maison>"
+                ChatColor.YELLOW
+                        + "/rent info <maison>"
         );
 
-
         player.sendMessage(
-                ChatColor.YELLOW +
-                "/rent rent <maison> <jours>"
+                ChatColor.YELLOW
+                        + "/rent rent <maison> <jours>"
         );
 
-
         player.sendMessage(
-                ChatColor.YELLOW +
-                "/rent extend <maison> <jours>"
+                ChatColor.YELLOW
+                        + "/rent extend <maison> <jours>"
         );
 
-
         player.sendMessage(
-                ChatColor.YELLOW +
-                "/rent trust <maison> <joueur>"
+                ChatColor.YELLOW
+                        + "/rent trust <maison> <joueur>"
         );
 
-
         player.sendMessage(
-                ChatColor.YELLOW +
-                "/rent untrust <maison> <joueur>"
+                ChatColor.YELLOW
+                        + "/rent untrust <maison> <joueur>"
         );
 
-
         player.sendMessage(
-                ChatColor.YELLOW +
-                "/rent leave <maison>"
+                ChatColor.YELLOW
+                        + "/rent leave <maison>"
         );
-
-
     }
-
-
 }
