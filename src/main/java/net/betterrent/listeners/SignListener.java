@@ -7,6 +7,7 @@ import net.betterrent.utils.RegionUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 
 import org.bukkit.event.EventHandler;
@@ -39,6 +40,21 @@ public class SignListener implements Listener {
 
         Player player = event.getPlayer();
 
+        // ==========================================
+        // PANNEAU BETTERRENT
+        // ==========================================
+
+        if (isBetterRentSign(block)) {
+
+            handleRentSign(event, player, block);
+
+            return;
+        }
+
+        // ==========================================
+        // PROTECTION DES MAISONS
+        // ==========================================
+
         RentHouse house = regionUtil.getHouseAt(
                 block.getLocation()
         );
@@ -47,17 +63,17 @@ public class SignListener implements Listener {
             return;
         }
 
-        // ==========================
+        // ==========================================
         // OP
-        // ==========================
+        // ==========================================
 
         if (player.isOp()) {
             return;
         }
 
-        // ==========================
+        // ==========================================
         // PROPRIETAIRE / TRUST
-        // ==========================
+        // ==========================================
 
         if (isAllowed(player, house)) {
             return;
@@ -65,9 +81,9 @@ public class SignListener implements Listener {
 
         Material type = block.getType();
 
-        // ==========================
+        // ==========================================
         // COFFRES
-        // ==========================
+        // ==========================================
 
         if (type == Material.CHEST
                 || type == Material.TRAPPED_CHEST) {
@@ -79,9 +95,9 @@ public class SignListener implements Listener {
             return;
         }
 
-        // ==========================
+        // ==========================================
         // BARILS
-        // ==========================
+        // ==========================================
 
         if (type == Material.BARREL) {
 
@@ -92,9 +108,9 @@ public class SignListener implements Listener {
             return;
         }
 
-        // ==========================
+        // ==========================================
         // SHULKERS
-        // ==========================
+        // ==========================================
 
         if (type.name().endsWith("SHULKER_BOX")) {
 
@@ -105,9 +121,9 @@ public class SignListener implements Listener {
             return;
         }
 
-        // ==========================
+        // ==========================================
         // FOURS
-        // ==========================
+        // ==========================================
 
         if (type == Material.FURNACE
                 || type == Material.BLAST_FURNACE
@@ -120,9 +136,9 @@ public class SignListener implements Listener {
             return;
         }
 
-        // ==========================
+        // ==========================================
         // ENCLUMES
-        // ==========================
+        // ==========================================
 
         if (type == Material.ANVIL
                 || type == Material.CHIPPED_ANVIL
@@ -135,9 +151,9 @@ public class SignListener implements Listener {
             return;
         }
 
-        // ==========================
+        // ==========================================
         // TABLE DE CRAFT
-        // ==========================
+        // ==========================================
 
         if (type == Material.CRAFTING_TABLE) {
 
@@ -148,9 +164,9 @@ public class SignListener implements Listener {
             return;
         }
 
-        // ==========================
+        // ==========================================
         // TABLE D'ENCHANTEMENT
-        // ==========================
+        // ==========================================
 
         if (type == Material.ENCHANTING_TABLE) {
 
@@ -162,9 +178,83 @@ public class SignListener implements Listener {
         }
     }
 
-    // ==========================
+    // ==========================================
+    // DETECTER UN PANNEAU BETTERRENT
+    // ==========================================
+
+    private boolean isBetterRentSign(Block block) {
+
+        Material type = block.getType();
+
+        if (!type.name().endsWith("_SIGN")) {
+            return false;
+        }
+
+        if (!(block.getState() instanceof Sign sign)) {
+            return false;
+        }
+
+        String line = ChatColor.stripColor(
+                sign.getLine(0)
+        );
+
+        return line.equalsIgnoreCase("[BetterRent]");
+    }
+
+    // ==========================================
+    // CLIC SUR PANNEAU
+    // ==========================================
+
+    private void handleRentSign(
+            PlayerInteractEvent event,
+            Player player,
+            Block block
+    ) {
+
+        event.setCancelled(true);
+
+        if (!(block.getState() instanceof Sign sign)) {
+            return;
+        }
+
+        String houseName =
+                ChatColor.stripColor(
+                        sign.getLine(1)
+                );
+
+        String price =
+                ChatColor.stripColor(
+                        sign.getLine(2)
+                );
+
+        player.sendMessage(
+                ChatColor.GOLD +
+                "===== BetterRent ====="
+        );
+
+        player.sendMessage(
+                ChatColor.YELLOW +
+                "Maison : " +
+                ChatColor.WHITE +
+                houseName
+        );
+
+        player.sendMessage(
+                ChatColor.YELLOW +
+                "Prix : " +
+                ChatColor.WHITE +
+                price
+        );
+
+        player.sendMessage(
+                ChatColor.GREEN +
+                "Système de location bientôt disponible."
+        );
+    }
+
+    // ==========================================
     // JOUEUR AUTORISE
-    // ==========================
+    // ==========================================
 
     private boolean isAllowed(
             Player player,
@@ -184,9 +274,9 @@ public class SignListener implements Listener {
         );
     }
 
-    // ==========================
+    // ==========================================
     // BLOQUER
-    // ==========================
+    // ==========================================
 
     private void cancel(
             PlayerInteractEvent event,
@@ -196,8 +286,8 @@ public class SignListener implements Listener {
         event.setCancelled(true);
 
         player.sendMessage(
-                ChatColor.RED
-                        + "Vous ne pouvez pas utiliser ceci dans cette location."
+                ChatColor.RED +
+                "Vous ne pouvez pas utiliser ceci dans cette location."
         );
     }
 }
